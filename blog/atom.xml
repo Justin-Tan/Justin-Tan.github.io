@@ -1,0 +1,19 @@
+---
+layout: feed
+---
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+	<title>Hank Quinlan's Blog</title>
+	<link href="http://justin-tan.github.io.github.io/blog/atom.xml" rel="self"/>
+	<link href="http://justin-tan.github.io/blog"/>
+	<updated>{{ site.time | date_to_xmlschema }}</updated>
+	<id>http://justin-tan.github.io/blog</id>
+	<author>
+		<name>Justin Tan</name>
+		<email>justin.jia.tian@gmail.com</email>
+	</author>
+
+	{% for post in site.posts %}
+		<entry>
+
