@@ -6,7 +6,7 @@ categories: machine-learning, latent-variables, jax
 ---
 
 ## Latent Variable Models for Density Estimation in Jax
-In this post we'll recap the basics of latent variable models for density estimation. Two approaches will be highlighted - the importance weighted autoencoder and the recently proposed SUMO (Stochastically Unbiased Marginalization Objective), an unbiased estimator of the log-marginal likelihood. We'll implement both these models in Jax, and see how Jax differs from standard Autodiff frameworks. Finally, we end with the obligatory illustrative toy problem. There's a nice picture of my neighbour's cat at the end for some extra motivation.
+In this post we'll recap the basics of latent variable models for density estimation. Two approaches will be highlighted - the importance weighted autoencoder and the recently proposed SUMO (Stochastically Unbiased Marginalization Objective), an unbiased estimator of the log-marginal likelihood. We'll implement both these models in Jax, and see how Jax differs from standard Autodiff frameworks. Finally, we end with the obligatory illustrative toy problem. There's a nice picture of my neighbour's cat at the end for some extra motivation. If you'd rather read code, check out the [associated repository on Github](https://github.com/justin-tan/density_estimation_jax). 
 
 - Latent Variable Models
 - Importance Weighting: Motivation
@@ -35,5 +35,22 @@ G_t&=R_{t+1}+\gamma R_{t+2}+\gamma^2 R_{t+3}+\gamma^3 R_{t+4}+...\\
 &=R_{t+1}+\gamma G_{t+1}\\
 \end{aligned}
 \end{multline}$$
+
+{% highlight python %}
+def diag_gaussian_entropy(mean, logvar):
+    # Entropy of diagonal Gaussian
+    D = mean.shape[0]
+    diff_entropy = 0.5 * (D * jnp.log(2 * jnp.pi) + jnp.sum(logvar) + D)
+    return diff_entropy
+{% endhighlight %}
+
+
+{% highlight ruby %}
+def print_hi(name)
+  puts "Hi, #{name}"
+end
+print_hi('Tom')
+#=> prints 'Hi, Tom' to STDOUT.
+{% endhighlight %}
 
 
