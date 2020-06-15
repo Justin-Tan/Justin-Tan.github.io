@@ -5,14 +5,14 @@ date: 2020-06-15
 categories: machine-learning, latent-variables, jax
 ---
 
-## Latent Variable Models for Density Estimation in Jax
-In this post we'll recap the basics of latent variable models for density estimation. Two approaches will be highlighted - the importance weighted autoencoder and the recently proposed SUMO (Stochastically Unbiased Marginalization Objective), an unbiased estimator of the log-marginal likelihood. We'll implement both these models in Jax, and see how Jax differs from standard Autodiff frameworks. Finally, we end with the obligatory illustrative toy problem. There's a nice picture of my neighbour's cat at the end for some extra motivation. If you'd rather read code, check out the [associated repository on Github](https://github.com/justin-tan/density_estimation_jax). 
+## Latent Variable Models in Jax
+In this post we'll recap the basics of latent variable models for density estimation/sampling. Two approaches will be highlighted - the importance weighted autoencoder and the recently proposed SUMO (Stochastically Unbiased Marginalization Objective), an unbiased estimator of the log-marginal likelihood. Implementing these models in Jax will highlight how Jax differs from standard Autodiff frameworks in some major aspects. Finally, we end with the obligatory illustrative toy problem. There's a nice picture of my neighbour's cat at the end for some extra motivation. If you'd rather read code, check out the [associated repository on Github](https://github.com/justin-tan/density_estimation_jax). 
 
 - Latent Variable Models
-- Importance Weighting: Motivation
+- The Importance Weighted ELBO
 - SUMO
 - Implementation in `Jax`
-- Illustrative Toy Problem - "Neal's Funnel"
+- Application to efficient sampling from "Neal's Funnel"
 - Conclusion
 
 ## Latent Variable Models
