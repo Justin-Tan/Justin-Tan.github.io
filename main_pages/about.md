@@ -11,3 +11,5 @@ Bruce Springsteen, playing with my neighbour's cats, soccer. Sometimes machine l
 
 [github](https://github.com/justin-tan) /
 [mail](mailto:justin.jia.tian@gmail.com)
+
+<a href="https://www.facebook.com/your-facebook-username" title="Facebook"><i class="fa fa-facebook-square"></i></a>
