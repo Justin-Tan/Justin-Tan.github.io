@@ -18,7 +18,7 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Educational Posts
+title: Shell-Shocked
 email: justin.jia.tian@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
   A blog about cats. Sometimes machine learning.
@@ -48,6 +48,10 @@ gist:
 kramdown:
   math_engine: mathjax
   syntax_highlighter: rouge
+
+minima:
+  skin: dark
+  date_format: "%b %-d, %Y"
 
 permalink: /blog/:year/:month/:day/:title
 

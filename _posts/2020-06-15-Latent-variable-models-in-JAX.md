@@ -6,11 +6,11 @@ date: 2020-06-15
 categories: machine-learning, latent-variables, jax
 usemathjax: true
 readtime: True
-image: /assets/images/shell.png
+image: /assets/images/shell_web.jpg
 excerpt_separator: <!--more-->
 ---
 
-In this post we'll recap the basics of latent variable models for density estimation/sampling. We'll implement two particular approaches in Jax - the importance weighted autoencoder and the recently proposed SUMO (Stochastically Unbiased Marginalization Objective). This will highlight how Jax differs from standard Autodiff frameworks in some major aspects. <!--more-->Finally, we end with the obligatory illustrative toy problem. There's a nice picture of my neighbour's cat at the end for some extra motivation. If you'd rather read code, check out the [associated repository on Github](https://github.com/justin-tan/density_estimation_jax). 
+In this post we'll examine applications of LVMs to density estimation/fast sampling. We'll implement two illustrative approaches in Jax, highlighting how Jax differs from standard Autodiff frameworks in some major aspects.<!--more--> In particular, we'll look at the importance weighted autoencoder and the recently proposed SUMO (Stochastically Unbiased Marginalization Objective). Finally, we end with the obligatory illustrative toy problem. There's a nice picture of my neighbour's cat at the end for some extra motivation. If you'd rather read code, check out the [associated repository on Github](https://github.com/justin-tan/density_estimation_jax). 
 
 - Latent Variable Models
 - The Importance Weighted ELBO
@@ -19,18 +19,60 @@ In this post we'll recap the basics of latent variable models for density estima
 - Application to efficient sampling from "Neal's Funnel"
 - Conclusion
 
-## Latent Variable Models
+* Contents
+{:toc}
 
-Latent variable models allow us to augment observed data $x \in \mathcal{X}$ with unobserved, or latent variables $z \in \mathcal{Z}$. This is a modelling choice, in the hopes that we can better describe the observed data in terms of unobserved factors. We do this by defining a conditional model $p(x \vert z)$ that describes the dependence of observed data on latent variables, as well as a prior density $p(z)$ over the latent space. Typically defining this conditional model requires some degree of cleverness, or we can do the vogue thing and just use a big neural network.
 
-Latent variables are useful because they may reveal something useful about the data. For instance, we may postulate that the high-dimensionality of the observed data may be 'artificial', in the sense that the observed data can be explained by more elementary, unobserved variables. Informally, we may hope that these latent factors capture most of the relevant information about the high-dimensional data in a succinct low-dimensional representation. To this end, we may make the modelling assumption that $$\text{dim}\left(\mathcal{Z}\right) \ll \text{dim}\left(\mathcal{X}\right)$$.
+## **1. Importance Weighted Autoencoders**
+### **1.1 Heuristic Motivation**
+Let $R$ be a random variable such that $\mathbb{E}\left[R\right] = p(x)$. Then we have:
 
-This is a test $\int_x p(y \vert x) p(x) $
+\begin{equation}
+    \log p(x) = \mathbb{E}\left[\log R\right] + \mathbb{E}\left[\log p(x) - \log R\right]
+\end{equation}
 
-Also a test \\[\int \pi /6 \\]
+Using Jensen's Inequality, we can interpret the first term on the right as a loewr bound on $\log p(x)$, and the second term as the bias. If we assume that $R$ stays relatively close to $p(x)$, then we can expand $\log R$ in a Taylor Series around $p(x)$:
 
-$$ f(x) = x^2 $$
+$$\begin{align}
+    \E{}{\log R} &= \E{}{\log\left(p(x) + R - p(x)\right)} \\
+    &\approx \E{}{\log p(x) + \frac{1}{p(x)}\left(R - p(x)\right) - \frac{1}{2p(x)^2} \left(R - p(x)\right)^2} \\
+    &= \log p(x) - \frac{1}{2p(x)^2} \mathbb{V}\left[R\right]
+\end{align}$$
 
+So the 'slackness' in the bound (approximately) scales with the variance of $R$, $\mathbb{V}\left[R\right]$:
+
+\begin{align}
+    \log p(x) - \mathbb{E}\left[\log R\right] \approx \frac{1}{2p(x)^2}\mathbb{V}\left[R\right] \geq 0
+\end{align}
+
+Note to make use of this expansion, we should have that $R$ is concentrated near $p(x)$ in the sense that the Taylor series for $\log\left(1 + \frac{R-p(x)}{p(x)}\right)$ converges, as:
+
+$$ \log(\mu + R - \mu) = \log \mu + \log\left(1 + \frac{R-\mu}{\mu}\right) $$
+
+This suggests we should look for a function of $R$ with the same mean but lower variance, one easy possibility is just the sample mean $R_K = \frac{1}{K}\sum_{k=1}^K R_k$. Then, as each $R_k$ has identical mean $p(x)$, we still have $\log p(x) \geq \E{}{\log R_K}$, but now this gives a tighter bound by a factor of $1/K$, with the caveat that $\vert \frac{R-p(x)}{p(x)} \vert < 1$. 
+
+### **1.2. The Importance-Weighted ELBO**
+We can connect this back to variational inference by letting $R$ have the following form:
+
+\begin{equation}
+    R = \frac{p(x,z)}{q(z)}, \quad z \sim q
+\end{equation}
+
+This satisfies the condition $\E{q}{R} = p(x)$. By Jensen's Inequality, we have the following lower bound on the log marginal likelihood:
+
+\begin{equation}
+    \E{q}{\log R} \leq \log p(x)
+\end{equation}
+
+From our heuristic argument above, we can tighten this bound by sampling multiple $z_k \sim q$ and using the sample mean over $R$ to estimate $p(x)$, arriving at the importance-weighted ELBO, or the IW-ELBO \citep{burda:iwae}. Being a tighter variational bound, this is a useful but biased replacement for $\log p(x)$ for density estimation problems. 
+
+$$\begin{align}
+    % R_K &= \frac{1}{K} \sum_{k=1}^K \frac{p(x, z_k)}{q(z_k)}, \quad z_k \sim q \\
+    \textrm{IW-ELBO}_K(x) &= \log \frac{1}{K} \sum_{k=1}^K \frac{p(x, z_k)}{q(z_k)}, \quad z_k \sim q
+\end{align}$$
+
+
+## 2. Density Estimation
 $$\begin{multline}
 \begin{aligned}
 G_t&=R_{t+1}+\gamma R_{t+2}+\gamma^2 R_{t+3}+\gamma^3 R_{t+4}+...\\
@@ -52,6 +94,14 @@ def diag_gaussian_entropy(mean, logvar):
     return diff_entropy
 {% endhighlight %}
 
+### 1.2 Sampling
 
 
+## 2. Importance-Weighted Autoencoders
+
+### 2.1 Motivation
+
+## 3. SUMO
+
+### 3.1 Reducing Variance
 

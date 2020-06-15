@@ -38,5 +38,26 @@
     </script>
     <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script> 
 
+    {% if page.usemathjax %}
+    <div style="display:none">
+      $
+      \def\bold#1{{\bf #1}}
+      \def\RR{{\bf R}}
+      \DeclareMathOperator*{\argmax}{argmax}
+      \DeclareMathOperator*{\max}{max}
+      \DeclareMathOperator*{\min}{min}
+      \DeclareMathOperator*{\argmin}{argmin}
+      \newcommand{\elbo}{\textsc{elbo}}
+      \newcommand\testmacro[2]{\mathbf{F\alpha}(#1)^{#2}}
+      \newcommand{\kl}[2]{D_{\mathrm{KL}}\left(#1 \Vert #2\right)}
+      \newcommand{\E}[2]{\mathbb{E}_{#1}\left[#2\right]}
+      $
+      </div>
+    {% endif %}
+
+    <!-- Code Syntax Style -->
+    <link rel="stylesheet" href="/assets/css/syntax.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Serif+Pro:400,700">
+    <link rel="stylesheet" href="/assets/css/highlight.css">
   </head>
   
