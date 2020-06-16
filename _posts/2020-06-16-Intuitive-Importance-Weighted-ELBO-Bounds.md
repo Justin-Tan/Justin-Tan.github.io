@@ -14,7 +14,7 @@ Here we'll give a quick and dirty sketch about why importance-weighted autoencod
 
 
 ## **1. Importance Weighted Autoencoders**
-Recall that the setup is that we are attempting to model the log-marginal likelihood $\log p(x)$ over some given data $x$. The evidence lower bound (ELBO) lower bounds (surprise!) $\log p(x)$ with gap given by the KL divergence between the true posterior $p(z \vert x)$ and the learnt approximation $q_{\lambda}(z)$. We want to maximize the lower bound with respect to the variational parameters $\lambda$ of $q_{\lambda}$. For more information check out this [earlier primer post]({% post_url 2020-06-15-LVM-primer %}).
+Recall that the setup is that we are attempting to model the log-marginal likelihood $\log p(x)$ over some given data $x$. The evidence lower bound (ELBO) lower bounds (surprise!) $\log p(x)$ with gap given by the KL divergence between the learnt approximation $q_{\lambda}(z)$ and the true posterior $p(z \vert x)$. We want to maximize the lower bound with respect to the variational parameters $\lambda$ of $q_{\lambda}$. For more information check out this [earlier primer post]({% post_url 2020-06-15-LVM-primer %}).
 
 $$\begin{align}
 \kl{q_{\lambda}(z)}{p(z \vert x)} &=  \E{q_{\lambda}(z)}{\log q_{\lambda}(z) -  \log  p(z \vert x)} \\
@@ -70,7 +70,7 @@ $$\begin{align}
     \textrm{IW-ELBO}_K(x) &= \log \frac{1}{K} \sum_{k=1}^K \frac{p(x, z_k)}{q(z_k)}, \quad z_k \sim q
 \end{align}$$
 
-Our argument makes it fairly intuitive that the IW-ELBO _should_ be a consistent estimator, but we probably need to tread more carefully to demonstrate this formally. 
+Our argument makes it fairly intuitive that the IW-ELBO _should_ be a consistent estimator, but we probably need to tread more carefully - i.e. treat convergence of the Maclaurin series $\log(1+x)$ more carefully to demonstrate this formally.
 
 ### **1.3. IWAE in `Jax`**
 Here's a barebones implementation of learning this bound with an amortized diagonal-Gaussian encoder/decoder pair in Jax, more details to follow in the next post. Note that easy vectorization in Jax makes this an almost trivial extension of the single importance sample VAE case.
