@@ -48,7 +48,7 @@ Note to make use of this expansion, we should have that $R$ is concentrated near
 
 $$ \log(\mu + R - \mu) = \log \mu + \log\left(1 + \frac{R-\mu}{\mu}\right) $$
 
-This suggests we should look for a function of $R$ with the same mean but lower variance, one easy possibility is just the sample mean $R_K = \frac{1}{K}\sum_{k=1}^K R_k$. Then, as each $R_k$ has identical mean $p(x)$, we still have $\log p(x) \geq \E{}{\log R_K}$, but now this gives a tighter bound by a factor of $1/K$, with the caveat that $\vert \frac{R-p(x)}{p(x)} \vert < 1$. 
+This suggests we should look for a function of $R$ with the same mean but lower variance, one easy possibility is just the sample mean $R_K = \frac{1}{K}\sum_{k=1}^K R_k$. Then, as each $R_k$ has identical mean $p(x)$, we still have $\log p(x) \geq \E{}{\log R_K}$, but now this gives a tighter bound by a factor of $1/K$, with the caveat that $\vert \frac{R-p(x)}{p(x)} \vert < 1$. So using more importance samples helps us pump those rookie numbers up.
 
 ### **1.2. The Importance-Weighted ELBO**
 We can connect this back to variational inference by letting $R$ have the following form:
