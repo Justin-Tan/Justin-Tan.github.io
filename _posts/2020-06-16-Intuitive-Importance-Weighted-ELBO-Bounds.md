@@ -10,7 +10,7 @@ image: /assets/images/shell_web.jpg
 excerpt_separator: <!--more-->
 ---
 
-Here we'll give a quick and dirty sketch about why importance-weighted autoencoders provide a lower bound on the log-marginal likelihood $\log p(x)$ in a way that's slightly different from the original paper. Then an easy implementation in Jax.<!--more-->
+Here we'll give a quick and dirty sketch about why importance-weighted autoencoders provide a lower bound on the log-marginal likelihood $\log p(x)$, then walk through a fast implementation in Jax.<!--more-->
 
 
 ## **1. Importance Weighted Autoencoders**
@@ -139,7 +139,9 @@ First, we split the `rng` states into `num_samples` new states, one for each imp
 
 The return result is the vectorized version of `iw_estimator`, which we call to get a vector, `iw_log_summand`, representing the log-summands $\log p(x \vert z_k) + \log p(z_k) - \log q(z_k \vert x)$ for each importance sample $z_k$. This will be a one-dimensional array with number of elements given by the number of importance samples $K$. Finally for numerical stability we take the $\text{logsumexp}$ of the log-summands and average this to give the final IW-ELBO(K). Note how easy it was to automatically parallelize the computation of the different importance sample summands using `jax.vmap` - there's a Pytorch implementation in the Appendix that requires us to manually reason about the batch dimension during reparameterization, and involves a lot of reasoning about axes and dimensions in order to ensure we are performing a matrix-vector operation on the GPU and not a sequence of vector-vector operations.
 
-We are done, the IW-ELBO can be used as a drop-in replacement for the standard ELBO, trading off tightness of the bound for compute time. We didn't talk about two very important features of Jax - `jax.jit` and `jax.grad`, but we'll cover this more thoroughly in the next post, about other nice ways of estimating $\log p(x)$ and optimizing our estimates in terms of the amortized parameters. If you have any suggestions about how the presented code can be optimized, please let me know!
+## Conclusion
+
+We are done, the IW-ELBO can be used as a drop-in replacement for the standard ELBO, trading off tightness of the bound for compute time. We didn't talk about two very important features of Jax - `jax.jit` and `jax.grad`, but we'll cover this more thoroughly in the next post, about other nice ways of estimating $\log p(x)$ and optimizing our estimates in terms of the amortized parameters. If you have any suggestions about the content or how the presented code can be optimized, please let me know!
 
 ## References
 
@@ -160,7 +162,7 @@ NIPS (2018).
 
 ## Appendix: Pytorch Implementation
 
-We omit the standard helper functions below for brevity. Imagine we had some standard `VAE` class with all the base functionality. There may be a more efficient way to do this in Torch rather than brute-force duplication along the batch axis, but it is reasonably fast with no significant slowdown for up to 256 importance samples using a batch size of 512 and input data with dimension 64.
+We omit the standard helper functions below for brevity. Imagine we had some standard `VAE` class with all the base functionality. There may be a more efficient way to do this in Torch rather than brute-force duplication along the batch axis, but it is reasonably fast with no significant slowdown for up to 256 importance samples using a batch size of 512 and input data with dimension 64. Note that, unlike Jax, a lot of the code is concerned with manually batching the importance samples into a single matrix for efficient vectorization. 
 
 {% highlight python %}
 class IWAE(VAE):
