@@ -146,33 +146,41 @@ Assume that our primary objective is distribution modelling - we are not interes
 
 ### Density Estimation
 Here we would like to find a reliable estimate of the log-probability of a given observation $x$. This can be achieved by minimizing the 'forward' KL divergence between the true distribution and the model distribution:
-    
+
 $$\begin{align}
     \mathcal{L}(\theta) = \kl{p^*(x)}{p_{\theta}(x)} &= \E{p^*(x)}{\log \frac{p^*(x)}{p_{\theta}(x)}} \\
     &= -\E{p^*(x)}{\log p_{\theta}(x)} - \mathbb{H}(p^*) 
 \end{align}$$
 
-The expectation is taken over the target distribution, so the forward-KL is useful whenever samples from the target distribution are easily accessible/generated. This is the case in most popular applications, e.g. image processing, language modelling. Note that minimization of the forward-KL with respect to $\theta$ reduces to minimization of the cross-entropy between the target and model distribution, as the entropy of $p^*$ is a constant term.
-    
-### Approximate Sampling
-Another application is to generate samples from the target distribution $p^*(x)$ using the model $p_{\theta}$ as a surrogate. This can be achieved by minimizing the 'reverse' KL divergence, which interchanges the arguments of the forward KL divergence: 
+The expectation is taken over the target distribution, so the forward-KL is useful where the target density cannot be explicitly evaluated, but samples from the target distribution are easily accessible/generated. This is the case in most popular applications, e.g. image processing, language modelling. Note that minimization of the forward-KL with respect to $\theta$ reduces to minimization of the cross-entropy between the target and model distribution, as the entropy of $p^*$ is a constant term, so maximizing the \textsc{elbo} is equivalent to minimizing the forward KL. If $p_{\theta}(x)$ is close to zero in a region where $p^*(x)$ is nonzero, this will incur a large penalty under the forward KL divergence - thus models trained using the forward KL will be fairly liberal with density assignment in $x$-space in the sense that they will overestimate the support of $p^*(x)$.
+
+It is also possible to minimize the 'reverse' KL divergence, which interchanges the arguments of the forward KL divergence: 
 
 $$\begin{align}
     \mathcal{L}(\theta) = \kl{p_{\theta}(x)}{p^*(x)} &= \E{p_{\theta}(x)}{\log \frac{p_{\theta}(x)}{p^*(x)}} \\
     &= \E{p_{\theta}(x)}{\log p_{\theta}(x) - \log p^*(x)} \\
     &= -\mathbb{H}(p_{\theta}) - \E{p_{\theta}(x)}{\log p^*(x)}.
 \end{align}$$
-    
-Unlike the forward-KL, reverse-KL requires explicit evaluation of the (possibly unnormalized) target density $p^*(x)$ (the normalization constant enters as a constant term in the objective function with respect to $\theta$), so this is suitable if we have access to the true target density but no efficient sampling algorithm. We also need to be able to efficiently sample from the model to generate the Monte Carlo estimates used during optimization. Note that the reverse-KL objective can be minimized by maximization of the entropy $\mathbb{H}(p_{\theta})$, which corresponds to minimization of $\log p_{\theta}(x)$. This is in the 'morally wrong direction' to how we are optimizing the \textsc{elbo} - we are attempting to minimize a lower bound. This is problematic as minimization of $\log p_{\theta}(x)$ can be achieved through artificial deterioration of the bound, optimizing $\theta$ to maximize the gap $\kl{q_{\lambda}(z)}{p(z\vert x)}$ between the \textsc{elbo} and $\log p_{\theta}(x)$ instead of minimizing the true objective.
+
+Unlike the forward-KL, reverse-KL requires explicit evaluation of the (possibly unnormalized) target density $p^*(x)$ (the normalization constant enters as a constant term in the objective function with respect to $\theta$), so this is suitable if we have access to the true target density but no efficient sampling algorithm. We also need to be able to efficiently sample from the model to generate the Monte Carlo estimates used during optimization. 
+
+Note that the reverse-KL objective can be minimized by maximization of the entropy $\mathbb{H}(p_{\theta})$, which corresponds to minimization of $\log p_{\theta}(x)$. This is in the 'morally wrong direction' to how we are optimizing the \textsc{elbo} - we are attempting to minimize a lower bound. This is problematic as minimization of $\log p_{\theta}(x)$ can be achieved through artificial deterioration of the bound, optimizing $\theta$ to maximize the gap $\kl{q_{\lambda}(z)}{p(z\vert x)}$ between the \textsc{elbo} and $\log p_{\theta}(x)$ instead of minimizing the true objective. In contrast to the forward KL, the reverse KL incurs a large penalty if $p_{\theta}(x)$ is nonzero wherever $p^*(x)$ is close to zero, so models trained under the reverse KL will be more conservative with probability mass and underestimate the support of $p^*(x)$.
+
+### Approximate Sampling 
+Another application is to generate samples from the target distribution $p^*(x)$ using the model $p_{\theta}$ as a surrogate. This is achieved by sampling from the approximate posterior in latent space and subsequently sampling from the conditional model:
+
+$$\begin{equation}
+    x \sim p_{\theta}(x) \equiv z \sim q_{\lambda}(z), \quad x \sim p_{\theta}(x \vert z)
+\end{equation}$$
 
 ## Appendix: LOTUS Proof
 
 Here we make explicit the random variable each distribution is defined over, defining $q_{\lambda} = p_Z$ and dropping the $\lambda$-dependence for clarity:
 
-- Let the cumulative distribution function (CDF) of $z$ be $F_z(z) = \mathbb{P}(Z \leq z)$, similarly for $\epsilon$: $F_{\varepsilon} = \mathbb{P}(\varepsilon \leq \epsilon)$, then note:
+- Let the cumulative distribution function (CDF) of $z$ be $F_Z(z) = \mathbb{P}(Z \leq z)$, similarly for $\epsilon$: $F_{\varepsilon} = \mathbb{P}(\varepsilon \leq \epsilon)$, then note:
 
 $$\begin{align}
-    F_z(z) &= \mathbb{P}(Z \leq z) \\
+    F_Z(z) &= \mathbb{P}(Z \leq z) \\
     &= \mathbb{P}(g^{-1}(Z) \leq g^{-1}(z)) \\
     &= \mathbb{P}(\epsilon \leq g^{-1}(z)) \\
     &= F_{\varepsilon}(g^{-1}(z))
