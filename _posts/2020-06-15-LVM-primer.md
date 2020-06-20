@@ -13,7 +13,7 @@ This post is meant to serve as a quick primer on latent variable models. We'll w
 * Contents
 {:toc}
 
-## **1. Latent Variable Models**
+# **1. Latent Variable Models**
 
 Latent variable models allow us to augment observed data $x \in \mathcal{X}$ with unobserved, or latent variables $z \in \mathcal{Z}$. This is a modelling choice, in the hopes that we can better describe the observed data in terms of unobserved factors. We do this by defining a conditional model $p(x \vert z)$ that describes the dependence of observed data on latent variables, as well as a prior density $p(z)$ over the latent space. Typically defining this conditional model requires some degree of cleverness, or we can do the vogue thing and just use a big neural network.
 
@@ -34,7 +34,7 @@ $$\begin{equation}
 
 But this is difficult to do! The more complex your conditional $p(x \vert z)$ is, the worse of a time you'll have trying to evaluate this. This integral has a time complexity exponential in $\text{dim}(\mathcal{Z})$ even for a simple conditional like a mixture of Gaussians, and analytic solutions and tractability go out the window the second you introduce neural networks into the mix.
 
-## **2. Approximating $p(z \vert x)$**
+# **2. Approximating $p(z \vert x)$**
 To circumvent the direct computation of $p(x)$, it is common to approximate the model posterior by a simpler distribution - one that allows efficient evaluation and sampling. Denote this approximating distribution with parameters $\lambda$ as $q_{\lambda}(z)$. Then we would like to find the distribution $q_{\lambda}(z)$ in some restricted family of 'nice' distributions $\mathcal{Q}$ that is as close as possible to the true posterior in terms of some sort of discrepancy function between distributions. The canonical choice is the 'reverse' KL divergence $\kl{q_{\lambda}(z)}{p(z \vert x)}$:
 
 \begin{equation}
@@ -74,7 +74,7 @@ As $\log p(x)$ is a constant with respect to the variational parameters $\lambda
 
 Note we write $\mathscr{F}$ out as an integral explicitly to generate some apprehension - if we wish to optimize the lower bound analytically, this limits the modelling distributions to simple distributions where it is possible to evaluate the integral in closed form. Alternatively, evaluating this with numerical quadrature generally scales exponentially in the number of latent variables and may be unrealistically computationally expensive. 
 
-## **Black-Box Variational Inference**
+# **3. Black-Box Variational Inference**
 Even if we are able to efficiently compute or approximate well the \elbo, we wish to maximize this estimate with respect to the variational parameters $\lambda$. So during this optimization procedure, we wish to compute the gradient of an expectation under some distribution with respect to the same parameters of said distribution:
  
 $$ \begin{equation}
@@ -83,7 +83,7 @@ $$ \begin{equation}
  
 As the distribution depends on the parameters $\lambda$, we cannot simply interchange the gradient and integral. We wish to phrase the integrand in a way that allows us to do this. This problem is more widespread than variational inference, and appears in reinforcement learning during computation of the policy gradient and sensitivity analysis in financial markets as well. This gradient estimation problem carries with it all the associated challenges of evaluating the expectation, plus now we have to compute derivatives. Black-box variational inference (BBVI) sidesteps evaluation of intractable expectations by expressing the gradient of the ELBO with respect to the variational parameters $\lambda$ as an expectation with respect to some density that may be efficiently sampled from. The gradient may then be approximated by Monte Carlo. We detail three of the main approaches to this problem below for optimization of the expectation of some objective function $f(z; \lambda)$.
  
-### Score Function Estimator
+## 3.1. Score Function Estimator
 The name of this technique arises from the following identity regarding the score function, the derivative of the log of a distribution with respect to the distribution parameters:
 
 $$\begin{equation}
@@ -110,7 +110,7 @@ $$\begin{align}
  
  So if $f(z; \lambda)$ can take on large values - which is possible during the early stages of training if $f$ is something like a log-likelihood, then the Monte Carlo estimate of the gradient will oscillate wildly around zero, making convergence difficult. There exist numerous variance-reduction technqiues to make the score function estimator usable. 
  
-### Reparameterization
+## 3.2. Reparameterization
  Sometimes also known as the pathwise estimator. The core idea is that, for certain classes of distributions, samples from $q_{\lambda}(z)$ may be expressed as $\lambda$-dependent deterministic transformations from some base distribution which is independent of $\lambda$:
  
  $$\begin{equation}
@@ -141,10 +141,10 @@ $$\begin{align}
 
 Reparameterization rocketed to prominence owing to its use in variational autoencoders and normalizing flows, where the base distribution $p(\epsilon)$ is typically taken to be the standard Gaussian, and the transformation $g$ is represented by some sort of neural network architecture. Here the variational parameters $\lambda$ are not learnt per-datapoint but taken to be the parameters of $g$.
 
-## **What can I do with $\log p(x)$?**
+# **4. What can I do with $\log p(x)$?**
 Assume that our primary objective is distribution modelling - we are not interested in the latent variables for the time being, treating them as some sort of mathematical sleight of hand to efficiently evaluate the objective $\log p(x)$. Estimating this objective has two main applications. Below let the true data distribution be $p^*(x)$ and make explicit the model parameters by writing the estimate as $p_{\theta}(x)$.
 
-### Density Estimation
+## 4.1. Density Estimation
 Here we would like to find a reliable estimate of the log-probability of a given observation $x$. This can be achieved by minimizing the 'forward' KL divergence between the true distribution and the model distribution:
 
 $$\begin{align}
@@ -164,9 +164,9 @@ $$\begin{align}
 
 Unlike the forward-KL, reverse-KL requires explicit evaluation of the (possibly unnormalized) target density $p^*(x)$ (the normalization constant enters as a constant term in the objective function with respect to $\theta$), so this is suitable if we have access to the true target density but no efficient sampling algorithm. We also need to be able to efficiently sample from the model to generate the Monte Carlo estimates used during optimization. 
 
-Note that the reverse-KL objective can be minimized by maximization of the entropy $\mathbb{H}(p_{\theta})$, which corresponds to minimization of $\log p_{\theta}(x)$. This is in the 'morally wrong direction' to how we are optimizing the \textsc{elbo} - we are attempting to minimize a lower bound. This is problematic as minimization of $\log p_{\theta}(x)$ can be achieved through artificial deterioration of the bound, optimizing $\theta$ to maximize the gap $\kl{q_{\lambda}(z)}{p(z\vert x)}$ between the \textsc{elbo} and $\log p_{\theta}(x)$ instead of minimizing the true objective. In contrast to the forward KL, the reverse KL incurs a large penalty if $p_{\theta}(x)$ is nonzero wherever $p^\*(x)$ is close to zero, so models trained under the reverse KL will be more conservative with probability mass and underestimate the support of $p^\*(x)$.
+Note that the reverse-KL objective can be minimized by maximization of the entropy $\mathbb{H}(p_{\theta})$, which corresponds to minimization of $\log p_{\theta}(x)$. This is in the 'morally wrong direction' to how we are optimizing the ELBO - we are attempting to minimize a lower bound. This is problematic as minimization of $\log p_{\theta}(x)$ can be achieved through artificial deterioration of the bound, optimizing $\theta$ to maximize the gap $\kl{q_{\lambda}(z)}{p(z\vert x)}$ between the ELBO and $\log p_{\theta}(x)$ instead of minimizing the true objective. In contrast to the forward KL, the reverse KL incurs a large penalty if $p_{\theta}(x)$ is nonzero wherever $p^\*(x)$ is close to zero, so models trained under the reverse KL will be more conservative with probability mass and underestimate the support of $p^\*(x)$.
 
-### Approximate Sampling 
+## 4.2. Approximate Sampling 
 Another application is to generate samples from the target distribution $p^*(x)$ using the model $p_{\theta}$ as a surrogate. This is achieved by sampling from the approximate posterior in latent space and subsequently sampling from the conditional model:
 
 $$\begin{equation}
