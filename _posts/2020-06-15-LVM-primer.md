@@ -95,7 +95,7 @@ $$\begin{equation}
 $$\begin{align}
      \nabla_{\lambda} \E{q_{\lambda}(z)}{f(z; \lambda)} &= \nabla_{\lambda} \int dz\;  q_{\lambda}(z) f(z; \lambda) \\
      &= \int dz \; \nabla_{\lambda} q_{\lambda}(z) f(z; \lambda) + q_{\lambda}(z)\nabla_{\lambda}f(z; \lambda) \\
-     &= \int dz \;  q_{\lambda}(z) \left(\nabla_{\lambda} \log q_{\lambda}(z) f(z;\lambda) | f(z;\lambda)\right)\\
+     &= \int dz \;  q_{\lambda}(z) \left(\nabla_{\lambda} \log q_{\lambda}(z) f(z;\lambda) + \nabla_{\lambda} f(z;\lambda)\right)\\
      &= \E{q_{\lambda}(z)}{\nabla_{\lambda}\log q_{\lambda}(z) f(z;\lambda) + \nabla_{\lambda}f(z;\lambda)} \\
      &\approx \frac{1}{K} \sum_{k=1}^K \nabla_{\lambda} \log q_{\lambda}(z) f(z_k; \lambda) + \nabla_{\lambda} f(z_k; \lambda), \quad z_k \sim q_{\lambda}
  \end{align}$$
@@ -111,7 +111,7 @@ $$\begin{align}
  So if $f(z; \lambda)$ can take on large values - which is possible during the early stages of training if $f$ is something like a log-likelihood, then the Monte Carlo estimate of the gradient will oscillate wildly around zero, making convergence difficult. There exist numerous variance-reduction technqiues to make the score function estimator usable. 
  
 ### Reparameterization
- Sometimes also known as the pathwise estimator. The core idea is that, for certain classes of distributions, samples from $q_{\lambda}(z)$ may be expressed parameter-dependent deterministic transformations from some base distribution which is independent of $\lambda$:
+ Sometimes also known as the pathwise estimator. The core idea is that, for certain classes of distributions, samples from $q_{\lambda}(z)$ may be expressed as $\lambda$-dependent deterministic transformations from some base distribution which is independent of $\lambda$:
  
  $$\begin{equation}
      \hat{z} \sim q_{\lambda}(z) \quad \equiv \quad \hat{\epsilon} \sim p(\epsilon), \; \hat{z} = g(\hat{\epsilon}; \lambda)  
@@ -129,13 +129,13 @@ $$\begin{equation}
 \E{q_{\lambda}(z)}{f(z;\lambda)} = \E{p(\epsilon)}{f\left(g(\epsilon;\lambda); \lambda\right)}
 \end{equation}$$
 
-The justification for this is sometimes called the Law of the Unconscious Statistician (LOTUS) - 'Unconscious' is apt, as we already used this previously when assuming the expected value $f(x) = \int dx \; p(x) f(x)$. A short sketch is given in the Appendix.
+The justification for this is sometimes called the Law of the Unconscious Statistician (LOTUS) - 'Unconscious' is apt, as we already used this previously when assuming the expected value $\E{p(x)}{f(x)} = \int dx \; p(x) f(x)$. A short proof sketch is given in the Appendix.
  
 The LOTUS allows us to pull the gradient operator into the integral after the change of variables, allowing us to obtain an estimator of the gradient of $f(z; \lambda)$ immediately,
 
 $$\begin{align}
      \nabla_{\lambda} \E{q_{\lambda}(z)}{f(z; \lambda)} &= \nabla_{\lambda} \E{p(\epsilon)}{f(g(\epsilon, \lambda); \lambda)} \\ 
-     &= \E{p(\epsilon)}{\nabla_{\lambda}}{f(g(\epsilon, \lambda); \lambda)} \\
+     &= \E{p(\epsilon)}{\nabla_{\lambda} f(g(\epsilon, \lambda); \lambda)} \\
      &\approx \frac{1}{K}\sum_{k=1}^K \nabla_{\lambda} f(g(\hat{\epsilon}_k, \lambda); \lambda), \quad \hat{\epsilon}_k \sim p(\epsilon)
 \end{align}$$
 
@@ -147,10 +147,10 @@ Assume that our primary objective is distribution modelling - we are not interes
 ### Density Estimation
 Here we would like to find a reliable estimate of the log-probability of a given observation $x$. This can be achieved by minimizing the 'forward' KL divergence between the true distribution and the model distribution:
     
-\begin{align}
+$$\begin{align}
     \mathcal{L}(\theta) = \kl{p^*(x)}{p_{\theta}(x)} &= \E{p^*(x)}{\log \frac{p^*(x)}{p_{\theta}(x)}} \\
     &= -\E{p^*(x)}{\log p_{\theta}(x)} - \mathbb{H}(p^*) 
-\end{align}
+\end{align}$$
 
 The expectation is taken over the target distribution, so the forward-KL is useful whenever samples from the target distribution are easily accessible/generated. This is the case in most popular applications, e.g. image processing, language modelling. Note that minimization of the forward-KL with respect to $\theta$ reduces to minimization of the cross-entropy between the target and model distribution, as the entropy of $p^*$ is a constant term.
     
