@@ -14,6 +14,12 @@ $text-color:       #111 !default;
 $background-color: #fdfdfd !default;
 $brand-color:      #2a7ae2 !default;
 
+$code-inline-bg: #2c3444 !default;
+$code-bg: #2c3444 !default;
+$grey-500: #2c3444 !default;
+$grey-200: #2c3444 !default;
+
+
 $grey-color:       #828282 !default;
 $grey-color-light: lighten($grey-color, 40%) !default;
 $grey-color-dark:  darken($grey-color, 25%) !default;
@@ -21,10 +27,10 @@ $grey-color-dark:  darken($grey-color, 25%) !default;
 $table-text-align: left !default;
 
 // Width of the content area
-$content-width:    800px !default;
+$content-width:    900px !default;
 
 $on-palm:          600px !default;
-$on-laptop:        800px !default;
+$on-laptop:        900px !default;
 
 // Use media queries like this:
 // @include media-query($on-palm) {

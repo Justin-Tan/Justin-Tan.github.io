@@ -8,3 +8,5 @@ title: Home
 ### Madrid
 
 In that order.
+
+![Image](/assets/images/shell_web3.jpg)

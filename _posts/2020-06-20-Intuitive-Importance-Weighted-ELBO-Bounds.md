@@ -2,7 +2,7 @@
 layout: post
 title: "Intuitive IWAE Bounds + Implementation in Jax"
 subtitle: "Pumping those rookie numbers up."
-date: 2020-06-16
+date: 2020-06-20
 categories: machine-learning, latent-variables, jax
 usemathjax: true
 readtime: True
@@ -12,6 +12,8 @@ excerpt_separator: <!--more-->
 
 Here we'll give a quick and dirty sketch about why importance-weighted autoencoders provide a lower bound on the log-marginal likelihood $\log p(x)$, then walk through a fast implementation in Jax.<!--more-->
 
+* Contents
+{:toc}
 
 ## **1. Importance Weighted Autoencoders**
 Recall that the setup is that we are attempting to model the log-marginal likelihood $\log p(x)$ over some given data $x$. The evidence lower bound (ELBO) lower bounds (surprise!) $\log p(x)$ with gap given by the KL divergence between the learnt approximation $q_{\lambda}(z)$ and the true posterior $p(z \vert x)$. We want to maximize the lower bound with respect to the variational parameters $\lambda$ of $q_{\lambda}$. For more information check out this [earlier primer post]({% post_url 2020-06-15-LVM-primer %}).
@@ -94,7 +96,7 @@ def diag_gaussian_logpdf(x, mean=None, logvar=None):
     return mean + jnp.exp(0.5 * logvar) * random.normal(rng, mean.shape)
 {% endhighlight %}
 
-First some convenience functions to evaluate the log-density of a diagonal Gaussian and to sample from a diagonal Gaussian using reparameterization. Note in Jax we explicitly pass a PRNG state, represented above by `rng` into any function where randomness is required, such as when sampling $\mathcal{N}(0,\mathbb{I})$ for reparameterization. The short reason for this is because standard PRNG silently updates the state used to generate pseudo-randomness, resulting in a hidden 'side effect' that is problematic for Jax's transformation and compilation functions, which only work on Python functions which are functionally pure. Instead Jax explicitly passes the PRNG state as an argument and splits the state as required whenever we require more instances of PRNG. Check out the [documentation](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#%F0%9F%94%AA-Random-Numbers) for more details. Next we define the log of the summand of the IW-ELBO estimator.
+First some convenience functions to evaluate the log-density of a diagonal Gaussian and to sample from a diagonal Gaussian using reparameterization. Note in Jax we explicitly pass a PRNG state, represented above by `rng` into any function where randomness is required, such as when sampling $\mathcal{N}(0,\mathbb{I})$ for reparameterization. The short reason for this is because standard PRNG silently updates the state used to generate pseudo-randomness, resulting in a hidden 'side effect' that is problematic for Jax's transformation and compilation functions, which only work on Python functions which are functionally pure. Instead Jax explicitly passes the PRNG state as an argument and splits the state as required whenever we require more instances of PRNG. Check out the [documentation](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#%F0%9F%94%AA-Random-Numbers) for more details. Next we define the log of the summand of the IW-ELBO estimator. Assume we have defined an amortized encoder/decoder that allows us to obtain the distribution parameters by passing each datapoint $x$ through their respective functions.
 
 {% highlight python %}
 def iw_estimator(x, rng, enc_params, dec_params):
@@ -119,7 +121,6 @@ def iw_estimator(x, rng, enc_params, dec_params):
 Apart from the `rng`, everything we have written down looks like plausible `numpy`/`torch` so far. The manner in which we collect the summands for different samples $z_k \sim q(z \vert x)$ is the only significant point of departure:
 
 {% highlight python %}
-@partial(jit, static_argnums=(5,))
 def iwelbo_amortized(x, rng, enc_params, dec_params, num_samples=32, *args, **kwargs):
 
     rngs = random.split(rng, num_samples)
@@ -134,10 +135,10 @@ def iwelbo_amortized(x, rng, enc_params, dec_params, num_samples=32, *args, **kw
 First, we split the `rng` states into `num_samples` new states, one for each importance sample. Next we make use of [`jax.vmap`](https://jax.readthedocs.io/en/latest/jax.html#jax.vmap) - one of the 'killer features' of Jax. This function vectorizes a function over a given axis of the input, so the function is evaluated in parallel across the given axis. A trivial example of this would be representing a matrix-vector operation as a vectorized form of dot products between each row of the matrix and the given vector, but `vmap` allows us to (in most cases) vectorize more complicated functions where it is not obvious how to manually 'batch' the computation. `vmap` takes in three arguments:
 
 - `fun`: This is the function to vectorize, in this case the function which computes the log of the summand for the IW-ELBO, we want to compute this in parallel across all the importance samples.
-- `in_axes`: This is a tuple/integer specifying which axes of the input the function should be parallelized with respect to. In this case, our function has multiple arguments, so `in_axes` is a list/tuple of length given by the number of arguments. Each element of `in_axes` represents the array axis to map over for the corresponding argument. A `None` means to not parallelize over this argument. Here the arguments of `iw_estimator` are `(x, rng, enc_params, dec_params)` - the input, PRNG state, and amortized encoder/decoder parameters, respectively. The input and the amortized parameters are constant for all importance samples, so the only argument we want the function to be parallelized over is the PRNG state. As `rngs` is a one-dimensional array, we want to parallelize over the first (`0`th) dimension, so `in_axes = (None, 0, None, None)`.'
+- `in_axes`: This is a tuple/integer specifying which axes of the input the function should be parallelized with respect to. In this case, our function has multiple arguments, so `in_axes` is a list/tuple of length given by the number of arguments to `fun`. Each element of `in_axes` represents the array axis to map over for the corresponding argument. A `None` means to not parallelize over this argument. Here the arguments of `iw_estimator` are `(x, rng, enc_params, dec_params)` - the input, PRNG state, and amortized encoder/decoder parameters, respectively. The input and the amortized parameters are constant for all importance samples, so the only argument we want the function to be parallelized over is the PRNG state. As `rngs` is a one-dimensional array, we want to parallelize over the first (`0`th) dimension, so `in_axes = (None, 0, None, None)`.'
 - `out_axes`: Similar definition to `in_axes`, but specifying which axis of the function output the vectorized result should appear. This is usually `0` (the default) in most cases, following the standard convention of letting the first axis of an array represent the number of batch elements.
 
-The return result is the vectorized version of `iw_estimator`, which we call to get a vector, `iw_log_summand`, representing the log-summands $\log p(x \vert z_k) + \log p(z_k) - \log q(z_k \vert x)$ for each importance sample $z_k$. This will be a one-dimensional array with number of elements given by the number of importance samples $K$. Finally for numerical stability we take the $\text{logsumexp}$ of the log-summands and average this to give the final IW-ELBO(K). Note how easy it was to automatically parallelize the computation of the different importance sample summands using `jax.vmap` - there's a Pytorch implementation in the Appendix that requires us to manually reason about the batch dimension during reparameterization, and involves a lot of reasoning about axes and dimensions in order to ensure we are performing a matrix-vector operation on the GPU and not a sequence of vector-vector operations.
+The return result is the vectorized version of `iw_estimator`, which we call to get a vector, `iw_log_summand`, representing the log-summands $\log p(x \vert z_k) + \log p(z_k) - \log q(z_k \vert x)$ for each importance sample $z_k$. This will be a one-dimensional array with number of elements given by the number of importance samples $K$. Finally for numerical stability we take the $\text{logsumexp}$ of the log-summands and average this to give the final IW-ELBO(K). Note how easy it was to automatically parallelize the computation of the different importance sample summands using `jax.vmap` - there's a Pytorch implementation in the Appendix that requires us to manually reason about the batch dimension during reparameterization, and involves a lot of wrangling over axes and dimensions in order to ensure we are performing a matrix-vector operation on the GPU and not a sequence of vector-vector operations.
 
 ## Conclusion
 
@@ -184,7 +185,8 @@ class IWAE(VAE):
         # [n*B,1]
         log_pz = math.log_density_gaussian(z_sample).sum(1, keepdim=True)
         log_qzCx = math.log_density_gaussian(z_sample, *qzCx_stats).sum(1, keepdim=True)
-        log_pxCz = math.log_density_gaussian(x, mu=pxCz_stats['mu'], logvar=pxCz_stats['logvar']).sum(1, keepdim=True) 
+        log_pxCz = math.log_density_gaussian(x, mu=pxCz_stats['mu'], 
+                    logvar=pxCz_stats['logvar']).sum(1, keepdim=True) 
 
         log_iw = log_pxCz + log_pz - log_qzCx
         log_iw = log_iw.reshape(-1, self.num_i_samples)  # [B,n]
@@ -202,8 +204,9 @@ class IWAE(VAE):
         qzCx_stats = self.encoder(x)
         mu_z, logvar_z = qzCx_stats  # [B,D]
         
-        # Repeat num_i_samples times along batch dimension
-        mu_z, logvar_z = self._inflate(mu_z, self.num_i_samples), self._inflate(logvar_z, self.num_i_samples)  # [n,B,D]
+        # Repeat num_i_samples times along batch dimension - [n,B,D]
+        mu_z = self._inflate(mu_z, self.num_i_samples) 
+        logvar_z = self._inflate(logvar_z, self.num_i_samples)
         mu_z, logvar_z = collapse(mu_z), collapse(logvar_z)  # [n*B,D]
         qzCx_stats = (mu_z, logvar_z)
 
@@ -212,6 +215,6 @@ class IWAE(VAE):
         pxCz_stats = self.decoder(z_sample)
 
         return pxCz_stats, z_sample, qzCx_stats
-  {% endhighlight %}
+{% endhighlight %}
    
   

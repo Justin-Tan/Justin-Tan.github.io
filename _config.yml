@@ -50,7 +50,6 @@ kramdown:
   syntax_highlighter: rouge
 
 minima:
-  skin: dark
   date_format: "%b %-d, %Y"
 
 permalink: /blog/:year/:month/:day/:title

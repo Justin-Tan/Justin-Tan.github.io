@@ -15,4 +15,4 @@ _Aforementioned cat._
 [Github](https://github.com/justin-tan) /
 [Mail](mailto:justin.jia.tian@gmail.com)
 
-This site is built using [Jekyll](https://github.com/jekyll/jekyll), using the very clean and extensible [Minima](https://github.com/jekyll/minima) theme.
+This site is built using [Jekyll](https://github.com/jekyll/jekyll).

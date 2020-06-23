@@ -44,7 +44,7 @@ To circumvent the direct computation of $p(x)$, it is common to approximate the 
 
 The final optimized variational distribution $q_{\lambda^*}(z)$ may then be used in lieu of the true posterior. 
 
-## **2.1. Optimizing for $q_{\lambda}$**
+## 2.1. Optimizing for $q_{\lambda}$
 Unfortunately, we do not have access to the true posterior $p(z \vert x)$, so cannot directly optimize $\kl{q_{\lambda}(z)}{p(z \vert x)}$. Nevertheless, applying Bayes' Theorem to the objective in Equation \ref{eq:vi_obj} allows us to define an objective in terms of quantities we can evaluate:
 
 $$\begin{align}
@@ -100,7 +100,9 @@ $$\begin{align}
      &\approx \frac{1}{K} \sum_{k=1}^K \nabla_{\lambda} \log q_{\lambda}(z) f(z_k; \lambda) + \nabla_{\lambda} f(z_k; \lambda), \quad z_k \sim q_{\lambda}
  \end{align}$$
  
- However, this estimator is not used in practice because it has a large variance, leading to slow convergence during optimization. To see this, note that the gradient of the score function has zero mean:
+ However, this estimator is not used in practice, stemming from the fact that the gradient estimate receives a contribution from a term that does not depend on the gradient w.r.t. parameters $\lambda$. This leads to several problems:
+ 
+- The gradient estimator has a large variance, leading to slow convergence during optimization. To see this, note that the gradient of the score function has zero mean:
  
  $$\begin{align}
      \int dz \; q_{\lambda}(z) \nabla_{\lambda} \log q_{\lambda}(z) &= \int dz \; \nabla_{\lambda} q_{\lambda}(z) \\
@@ -108,7 +110,11 @@ $$\begin{align}
      &= \nabla_{\lambda} (1) = 0.
  \end{align}$$
  
- So if $f(z; \lambda)$ can take on large values - which is possible during the early stages of training if $f$ is something like a log-likelihood, then the Monte Carlo estimate of the gradient will oscillate wildly around zero, making convergence difficult. There exist numerous variance-reduction technqiues to make the score function estimator usable. 
+ - So if $f(z; \lambda)$ can take on large values - which is possible during the early stages of training if $f$ is something like a log-likelihood, then the Monte Carlo estimate of the gradient will oscillate wildly around zero, making convergence difficult. There exist numerous variance-reduction technqiues to make the score function estimator usable. 
+ 
+- If the first term $\nabla_{\lambda} \log q_{\lambda}(z) f(z_k; \lambda)$ dominates the gradient estimate, then we receive a large contribution to the gradient from a term that does not depend on the gradient - reminiscent of random search behaviour, which rewards 'good samples' proportional to the reward they receive without any systematic way of identifying good samples beyond sampling.
+ 
+- Unlike the gradient, the term $f(z_k; \lambda) + \nabla_{\lambda} f(z_k; \lambda)$ is sensitive to constant shifts in the objective function $f$, which may be undesirable for optimization. Even worse, the convergence rate is dependent on the magnitude of the largest reward - if $f(z; \lambda)$ is shifted by a large constant, this will increase runtime, despite the ordering of the rewards remaining the same. 
  
 ## 3.2. Reparameterization
  Sometimes also known as the pathwise estimator. The core idea is that, for certain classes of distributions, samples from $q_{\lambda}(z)$ may be expressed as $\lambda$-dependent deterministic transformations from some base distribution which is independent of $\lambda$:
@@ -173,9 +179,11 @@ $$\begin{equation}
     x \sim p_{\theta}(x) \equiv z \sim q_{\lambda}(z), \quad x \sim p_{\theta}(x \vert z)
 \end{equation}$$
 
-## Appendix: LOTUS Proof
+If we are given some density $p^*(x) \propto \exp\left(-U(x)\right)$, where $U(x)$ is some energy function, the reverse-KL objective can be efficiently optimized for this purpose. Note we do not require normalization of $p^\*$ as $Z = \int dx \; \exp\left(-U(x)\right)$ is a constant w.r.t. $\theta$. 
 
-Here we make explicit the random variable each distribution is defined over, defining $q_{\lambda} = p_Z$ and dropping the $\lambda$-dependence for clarity:
+# Appendix: LOTUS Proof
+
+This is one of the things that bugged me about the derivation of reparameterization the most - I couldn't figure out where the Jacobian factor went under reparameterization until I realized that it was accounted for when changing variables in the CDF. Here we make explicit the random variable each distribution is defined over, defining $q_{\lambda} = p_Z$ and dropping the $\lambda$-dependence for clarity:
 
 - Let the cumulative distribution function (CDF) of $z$ be $F_Z(z) = \mathbb{P}(Z \leq z)$, similarly for $\epsilon$: $F_{\varepsilon} = \mathbb{P}(\varepsilon \leq \epsilon)$, then note:
 
