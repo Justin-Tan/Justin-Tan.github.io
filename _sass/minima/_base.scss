@@ -148,10 +148,11 @@ blockquote {
  */
 pre,
 code {
+  // font: $base-font-weight #{$base-font-size}/#{$base-line-height} $base-code-font-family;
   @include relative-font-size(0.9375);
-  border: 1px solid $grey-color-light;
-  border-radius: 3px;
-  background-color: #2c3444;
+  border: 2px solid $code-border-color;
+  border-radius: 0.5px;
+  background-color: $code-background-color;
 }
 
 code {
@@ -170,8 +171,8 @@ pre {
 }
 
 pre > code {
-  background-color:#2c3444;
-  color: Blue;
+  background-color: $code-background-color;
+  color: $code-block-color;
 }
 
 

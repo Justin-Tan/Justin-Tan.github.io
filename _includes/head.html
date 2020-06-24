@@ -3,6 +3,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
       {%- seo -%}
     <link rel="stylesheet" href="{{ "/assets/main.css" | relative_url }}">
+    <!-- Computer Modern Fonts-->
+    <link rel="stylesheet" href="{{ "/assets/fonts/Sans/cmun-sans.css" | relative_url }}">
+    <link rel="stylesheet" href="{{ "/assets/fonts/Typewriter/cmun-typewriter.css" | relative_url }}">
     {%- feed_meta -%}
     {%- if jekyll.environment == 'production' and site.google_analytics -%}
       {%- include google-analytics.html -%}
@@ -28,12 +31,20 @@
 
     <!-- MathJax-->
 
+
     <script type="text/x-mathjax-config">
       MathJax.Hub.Config({
+        extensions: [
+        "MathMenu.js",
+        "MathZoom.js",
+        "AssistiveMML.js",
+        "a11y/accessibility-menu.js"
+      ],
         tex2jax: {
           skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
           inlineMath: [['$','$']]
         }
+  
       });
     </script>
     <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script> 

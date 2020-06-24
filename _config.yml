@@ -48,6 +48,8 @@ gist:
 kramdown:
   math_engine: mathjax
   syntax_highlighter: rouge
+  # syntax_highlighter_opts:
+  #   disable : true
 
 minima:
   date_format: "%b %-d, %Y"

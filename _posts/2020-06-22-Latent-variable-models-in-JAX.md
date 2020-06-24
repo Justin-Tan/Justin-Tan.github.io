@@ -16,14 +16,14 @@ In this post we'll examine applications of LVMs to density estimation/approximat
 {:toc}
 
 # 1. SUMO
-The SUMO [[1]](#1) estimator makes use of the importance-weighted ELBO (IW-ELBO), examined in [an earlier post]({% post_url 2020-06-20-Intuitive-Importance-Weighted-ELBO-Bounds%}). Briefly, we are interested in finding a lower bound of the log-marginal likelihood $\log p(x)$. Under certain conditions, the tightness of this bound scales with the variance of some unbiased estimator $R$ of the marginal probability. $R$ depends on the latent variables through some proposal distribution $q(z)$: $\E{q}{R} = p(x)$. The regular VAE takes $R = p(x,z)/q(z)$, forming the normal ELBO $\E{q}{\log p(x,z) - q(z)}$, but a natural way to reduce the sample variance is through the $K$-sample mean, forming the IW-ELBO:
+The SUMO (Luo et. al., 2020, [[1]](#1)) estimator makes use of the importance-weighted ELBO (IW-ELBO), examined in [an earlier post]({% post_url 2020-06-20-Intuitive-Importance-Weighted-ELBO-Bounds%}). Briefly, we are interested in finding a lower bound of the log-marginal likelihood $\log p(x)$. Under certain conditions, the tightness of this bound scales with the variance of some unbiased estimator $R$ of the marginal probability. $R$ depends on the latent variables through some proposal distribution $q(z)$: $\E{q}{R} = p(x)$. The regular VAE takes $R = p(x,z)/q(z)$, forming the normal ELBO $\E{q}{\log p(x,z) - q(z)}$, but a natural way to reduce the sample variance is through the $K$-sample mean, forming the IW-ELBO:
 
 $$\begin{align}
     R_K &= \frac{1}{K} \sum_{k=1}^K \frac{p(x, z_k)}{q(z_k)}, \quad z_k \sim q \\
     \textrm{IW-ELBO}_K(x) &= \log \frac{1}{K} \sum_{k=1}^K \frac{p(x, z_k)}{q(z_k)}, \quad z_k \sim q
 \end{align}$$
 
-One can show [[2]](#2) that the IW-ELBO is monotonically increasing in expectation and converges to the true log-marginal likelihood as the variance vanishes as $K \rightarrow \infty$: 
+Here to be consistent with the notation in [[1]](#1), we define this without the expectation under $q$. One can show [[2]](#2) that the IW-ELBO is monotonically increasing in expectation and converges to the true log-marginal likelihood as the variance vanishes as $K \rightarrow \infty$: 
 
 $$\begin{equation}
 \E{q}{\textrm{IW-ELBO}_{K+1}(x)} \geq \E{q}{\textrm{IW-ELBO}_{K}(x)}, \quad \lim_{K \rightarrow \infty}\E{q}{\textrm{IW-ELBO}_{K}(x)} = \log p(x)
@@ -105,7 +105,7 @@ This section is quite long, but implementing and optimizing the SUMO estimator w
 
 ## 2.1. Defining the IW-ELBO
 
-First we need a way to get the importance-weighted ELBO terms that appear in the Russian roulette estimator. This part is a lighter version of the full discussion in the [post about the importance-weighted ELBO]({% post_url 2020-06-20-Intuitive-Importance-Weighted-ELBO-Bounds%}). We'll start off with the most `numpy`-like part of the code, defining convenience functions to evaluate the log-density of a diagonal-covariance Gaussian and to sample from a diagonal Gaussian using reparameterization.
+First we need a way to get the importance-weighted ELBO terms that appear in the Russian roulette estimator. This part is a modified version of the full discussion in an [earlier post about the importance-weighted ELBO]({% post_url 2020-06-20-Intuitive-Importance-Weighted-ELBO-Bounds%}). We'll start off with the most `numpy`/`torch`-like part of the code, defining convenience functions to evaluate the log-density of a diagonal-covariance Gaussian and to sample from a diagonal Gaussian using reparameterization.
 
 {% highlight python %}
 import jax as jnp
@@ -141,7 +141,7 @@ Due to the functional programming paradigm, defining the encoder/decoder network
 - An `init_fun`, which initializes the layer parameters.
 - An `apply_fun`, which defines the forward pass of the layer. 
 
-The Jax-native `stax` library provides a straightforward way to compose layers into a single model, wrapping them together according to a user-defined structure, and returning an `init_fun` which initializes parameters for all layers in the model and an `apply_fun` which defines the forward pass of the model as the composition of the forward computations for each layer. See [the documentation](https://jax.readthedocs.io/en/latest/_modules/jax/experimental/stax.html#Dense) for more details. Here both the amortized encoder/decoder are defined as single-hidden-layer networks, where the output of each is split into two pieces - the mean and diagonal of the covariance matrix over the respective space.
+The Jax-native `stax` library provides a straightforward way to compose layers into a single model, wrapping them together according to a user-defined structure, and returning an `init_fun` which initializes parameters for all layers in the model and an `apply_fun` which defines the forward pass of the model as the composition of the forward computations for each layer. See [the documentation](https://jax.readthedocs.io/en/latest/_modules/jax/experimental/stax.html#Dense) for more details. Here both the amortized encoder/decoder are defined as single-hidden-layer networks, where the output of each is split into two pieces - the mean and logarithm of the diagonal of the covariance matrix over the respective space. We'll refer to the latter as the log-variance. 
 
 {% highlight python %}
 from jax.experimental import stax
@@ -182,17 +182,12 @@ z_output_shape, init_encoder_params = encoder_init(enc_init_rng, (-1, feature_di
 x_output_shape, init_decoder_params = decoder_init(dec_init_rng, (-1, latent_dim))
 {% endhighlight %}
 
-Next we define the log of the summand of the IW-ELBO estimator. Recall the $K$-sample IW-ELBO is defined as:
-
-$$\begin{align}
-    \textrm{IW-ELBO}_K(x) &= \log \frac{1}{K} \sum_{k=1}^K \frac{p(x, z_k)}{q(z_k \vert x)}, \quad z_k \sim q
-\end{align}$$
-
+Next we define the log of the summand of the IW-ELBO estimator - i.e. $\log \frac{p(x, z_k)}{q(z_k \vert x)},  z_k \sim q$:
 {% highlight python %}
 def iw_estimator(x, rng, encoder, enc_params, decoder, dec_params):
 
     # Sample from q(z|x) by passing data through encoder and reparameterizing
-    z_mean, z_logvar = encoder(enc_params. x)  # Encoder fwd pass
+    z_mean, z_logvar = encoder(enc_params, x)  # Encoder fwd pass
     qzCx_stats = (z_mean, z_logvar)
     z_sample = diag_gaussian_sample(rng, *qzCx_stats)
     # Sample from p(x|z) by sampling from q(z|x), passing through decoder
@@ -211,7 +206,11 @@ def iw_estimator(x, rng, encoder, enc_params, decoder, dec_params):
 
 Note when applying the forward pass through the encoder and decoder, we have to explicitly pass the parameters of each network as arguments  - this is in line with Jax's functional programming interface - functions should only rely on their arguments, not global state. If you don't like this functional interface, the good news is that there are two projects - [flax](https://github.com/google/flax) and [trax](https://github.com/google/trax) which provide a more object-oriented interface for network construction (these are a lot more readable/hackable, IMO). 
 
-The manner in which we collect the summands for different samples $z_k \sim q(z \vert x)$ represents another significant point of departure from other autodiff frameworks:
+The manner in which we collect the summands for different samples $z_k \sim q(z \vert x)$ represents another significant point of departure from other autodiff frameworks. We have to arrange the summands into the estimator:
+
+$$\begin{align}
+    \textrm{IW-ELBO}_K(x) &= \log \frac{1}{K} \sum_{k=1}^K \frac{p(x, z_k)}{q(z_k \vert x)}, \quad z_k \sim q
+\end{align}$$
 
 {% highlight python %}
 def iwelbo_amortized(x, rng, enc_params, dec_params, num_samples=32, *args, **kwargs):
@@ -231,7 +230,7 @@ First, we split the `rng` states into `num_samples` new states, one for each imp
 - `in_axes`: This is a tuple/integer specifying which axes of the input the function should be parallelized with respect to. In this case, our function has multiple arguments, so `in_axes` is a list/tuple of length given by the number of arguments to `fun`. Each element of `in_axes` represents the array axis to map over for the corresponding argument. A `None` means to not parallelize over this argument. Here the arguments of `iw_estimator` are `(x, rng, enc_params, dec_params)` - the input, PRNG state, and amortized encoder/decoder parameters, respectively. The input and the amortized parameters are constant for all importance samples, so the only argument we want the function to be parallelized over is the PRNG state. As `rngs` is a one-dimensional array, we want to parallelize over the first (`0`th) dimension, so `in_axes = (None, 0, None, None)`.'
 - `out_axes`: Similar definition to `in_axes`, but specifying which axis of the function output the vectorized result should appear. This is usually `0` (the default) in most cases, following the standard convention of letting the first axis of an array represent the number of batch elements.
 
-The return result is the vectorized version of `iw_estimator`, which we call to get a vector, `iw_log_summand`, representing the log-summands $\log p(x \vert z_k) + \log p(z_k) - \log q(z_k \vert x)$ for each importance sample $z_k$. This will be a one-dimensional array with number of elements given by the number of importance samples $K$. Finally for numerical stability we take the $\text{logsumexp}$ of the log-summands and average this to give the final IW-ELBO(K). Note how easy it was to automatically parallelize the computation of the different importance sample summands using `vmap`.
+The return result of `vmap` is the vectorized version of `iw_estimator`, which we call to get a vector, `iw_log_summand`, representing the log-summands $\log p(x \vert z_k) + \log p(z_k) - \log q(z_k \vert x)$ for each importance sample $z_k$. This will be a one-dimensional array with number of elements given by the number of importance samples $K$. Finally for numerical stability we take the $\text{logsumexp}$ of the log-summands and average this to give the final IW-ELBO(K). Note that parallelization was near-automatic here for the computation of the different importance sample summands using `vmap` - we didn't have to keep track of a cumbersome batch dimension anywhere.
 
 
 ## 2.2. Defining the SUMO estimator
@@ -255,9 +254,17 @@ $$\begin{align}
 
 The target distribution $p^*$ in this case is defined as (originally proposed in [[4]](#4)):
 
-$$ p^*(x_1,x_2) = \mathcal{N}(x_1 \vert 0, 1.35^2) \cdot \mathcal{N}\left(x_2 \vert 0, \exp(2 x_1)\right)$$
+$$ p^*(x_1,x_2) = \mathcal{N}\left(x_0 \vert 0, \exp(2 x_1)\right) \cdot \mathcal{N}(x_1 \vert 0, 1.35^2) $$
 
-The distribution is shaped like a funnel, with a sharp neck in $x_2$ due to the exponential function applied to $x_1$. Note we can straightforwardly sample from $p^*$ by reparameterization: $x_1 = 1.35 \cdot \epsilon$, $x_2 = \exp(x_1) \cdot \epsilon$, where $\epsilon \sim \mathcal{N}(0,1)$, but we'll see how SUMO fares.
+{% highlight python %}
+import jax.scipy.stats.norm as norm
+def funnel_log_density(params):
+    return norm.logpdf(params[0], 0, jnp.exp(params[1])) + \
+           norm.logpdf(params[1], 0, 1.35)
+{% endhighlight %}
+
+
+The distribution is shaped like a funnel, with a sharp neck in $x_0$ as the variance is exponential in $x_1$. Note we can straightforwardly sample from $p^*$ by reparameterization: $x_0 = \exp(x_1) \cdot \epsilon$, $x_1 = 1.35 \cdot \epsilon$, where $\epsilon \sim \mathcal{N}(0,1)$, but we'll see how SUMO fares.
 
 ## 3.1. Objective Function
 
@@ -277,7 +284,7 @@ Jax has some very interesting design choices. In particular, automatic vectoriza
 
 ## Credits
 1. [Rob Lange's blog post](https://roberttlange.github.io/posts/2020/03/blog-post-10/) was very helpful when wrangling over the optimization process for Jax.
-2. [Jax FAQ](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html) helped out a lot when I was banging my head against my keyboard - Jax error traces can be a bit ... cryptic. 
+2. [The (quite large) Jax FAQ](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html) helped out a lot when I was banging my head against my keyboard - Jax error traces can be a bit ... cryptic. 
 3. [Bruce Springsteen](https://youtu.be/k1wqVIZR0ho?t=147) for providing the soundtrack for this post.
 
 ## References
