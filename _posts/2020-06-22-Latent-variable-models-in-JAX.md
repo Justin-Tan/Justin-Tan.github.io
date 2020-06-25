@@ -227,7 +227,7 @@ def iwelbo_amortized(x, rng, enc_params, dec_params, num_samples=32, *args, **kw
 First, we split the `rng` states into `num_samples` new states, one for each importance sample. Next we make use of [`jax.vmap`](https://jax.readthedocs.io/en/latest/jax.html#jax.vmap) - one of the 'killer features' of Jax. This function vectorizes a function over a given axis of the input, so the function is evaluated in parallel across the given axis. A trivial example of this would be representing a matrix-vector operation as a vectorized form of dot products between each row of the matrix and the given vector, but `vmap` allows us to (in most cases) vectorize more complicated functions where it is not obvious how to manually 'batch' the computation. `vmap` takes in three arguments:
 
 - `fun`: This is the function to vectorize, in this case the function which computes the log of the summand for the IW-ELBO, we want to compute this in parallel across all the importance samples.
-- `in_axes`: This is a tuple/integer specifying which axes of the input the function should be parallelized with respect to. In this case, our function has multiple arguments, so `in_axes` is a list/tuple of length given by the number of arguments to `fun`. Each element of `in_axes` represents the array axis to map over for the corresponding argument. A `None` means to not parallelize over this argument. Here the arguments of `iw_estimator` are `(x, rng, enc_params, dec_params)` - the input, PRNG state, and amortized encoder/decoder parameters, respectively. The input and the amortized parameters are constant for all importance samples, so the only argument we want the function to be parallelized over is the PRNG state. As `rngs` is a one-dimensional array, we want to parallelize over the first (`0`th) dimension, so `in_axes = (None, 0, None, None)`.'
+- `in_axes`: This is a tuple/integer specifying which axes of the input the function should be parallelized with respect to. In this case, our function has multiple arguments, so `in_axes` is a list/tuple of length given by the number of arguments to `fun`. Each element of `in_axes` represents the array axis to map over for the corresponding argument. A `None` means to not parallelize over this argument. Here the arguments of `iw_estimator` are `(x, rng, enc_params, dec_params)` - the input, PRNG state, and amortized encoder/decoder parameters, respectively. The input and the amortized parameters are constant for all importance samples, so the only argument we want the function to be parallelized over is the PRNG state. As `rngs` is a one-dimensional array, we want to parallelize over the first (`0`th) dimension, so `in_axes = (None, 0, None, None)`.
 - `out_axes`: Similar definition to `in_axes`, but specifying which axis of the function output the vectorized result should appear. This is usually `0` (the default) in most cases, following the standard convention of letting the first axis of an array represent the number of batch elements.
 
 The return result of `vmap` is the vectorized version of `iw_estimator`, which we call to get a vector, `iw_log_summand`, representing the log-summands $\log p(x \vert z_k) + \log p(z_k) - \log q(z_k \vert x)$ for each importance sample $z_k$. This will be a one-dimensional array with number of elements given by the number of importance samples $K$. Finally for numerical stability we take the $\text{logsumexp}$ of the log-summands and average this to give the final IW-ELBO(K). Note that parallelization was near-automatic here for the computation of the different importance sample summands using `vmap` - we didn't have to keep track of a cumbersome batch dimension anywhere.
@@ -235,13 +235,21 @@ The return result of `vmap` is the vectorized version of `iw_estimator`, which w
 
 ## 2.2. Defining the SUMO estimator
 
-The authors propose the following tail distribution for the number of terms $\mathcal{K}$ to evaluate in the series: $\mathbb{P}(\mathcal{K} \geq k) = \frac{1}{k}$. This has CDF $F_{\mathcal{K}}(k) = \mathbb{P}(\mathcal{K} \leq k) = 1 - \frac{1}{k+1}$ and so by the inverse CDF transform $\left \lfloor{\frac{u}{1-u}}\right \rfloor \sim p(\mathcal{K})$, where $u \sim \text{Uniform}[0,1]$[^3]. 
+The SUMO estimator is simple to implement, here are the basic steps:
+
+1. Sample stopping time $K \sim p(\mathcal{K})$. In practice to lower variance the authors choose to compute at least $m$ terms, so the total number of terms evaluated in the partial sum is $K+m$.
+2. Sample $z_k\sim q(z \vert x)$ for $k=1,\ldots, K+m$.
+3. Compute log-summands $\log w_k = \log p(x \vert z_k) + \log p(z_k) - \log q(z_k \vert x)$ for $k=1,\ldots, K+m$.
+4. Compute $\textrm{IW-ELBO}(k) = \texttt{logcumsumexp}\left(\log w_k\right) - \log(k)$. 
+5. Return: $\textrm{IW-ELBO}(m) + \sum_{k=m}^{K+m} \Delta_k(x) \, / \, \mathbb{P}(\mathcal{K} \geq k)$.
+
+We already did steps 2 and 3 above, let's focus on step 1 - the authors propose the following tail distribution for the number of terms $\mathcal{K}$ to evaluate in the series: $\mathbb{P}(\mathcal{K} \geq k) = \frac{1}{k}$. This has CDF $F_{\mathcal{K}}(k) = \mathbb{P}(\mathcal{K} \leq k) = 1 - \frac{1}{k+1}$ and so by the inverse CDF transform $\left \lfloor{\frac{u}{1-u}}\right \rfloor \sim p(\mathcal{K})$, where $u \sim \text{Uniform}[0,1]$[^3]. 
 
 # 3. Approximate Sampling
 Here we would like to generate samples from the target distribution $p^*(x)$ using the model $p_{\theta}$ as a surrogate. This is achieved by sampling from the approximate posterior in latent space and subsequently sampling from the conditional model:
 
 $$\begin{equation}
-    x \sim p_{\theta}(x) \equiv z \sim q_{\lambda}(z), \quad x \sim p_{\theta}(x \vert z)
+    x \sim p_{\theta}(x) \equiv z \sim q_{\lambda}(z), \: \: x \sim p_{\theta}(x \vert z)
 \end{equation}$$
 
 If we are given some density $p^*(x) \propto \exp\left(-U(x)\right)$, where $U(x)$ is some energy function, the reverse-KL objective can be efficiently optimized for this purpose:
@@ -254,13 +262,13 @@ $$\begin{align}
 
 The target distribution $p^*$ in this case is defined as (originally proposed in [[4]](#4)):
 
-$$ p^*(x_1,x_2) = \mathcal{N}\left(x_0 \vert 0, \exp(2 x_1)\right) \cdot \mathcal{N}(x_1 \vert 0, 1.35^2) $$
+$$ p^*(x_0,x_1) = \mathcal{N}\left(x_0 \vert 0, \exp(2 x_1)\right) \cdot \mathcal{N}(x_1 \vert 0, 1.35^2) $$
 
 {% highlight python %}
 import jax.scipy.stats.norm as norm
-def funnel_log_density(params):
-    return norm.logpdf(params[0], 0, jnp.exp(params[1])) + \
-           norm.logpdf(params[1], 0, 1.35)
+def funnel_log_density(x):
+    return norm.logpdf(x[0], 0, jnp.exp(x[1])) + \
+           norm.logpdf(x[1], 0, 1.35)
 {% endhighlight %}
 
 

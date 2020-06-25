@@ -15,7 +15,7 @@ Here we'll give a quick and dirty sketch about why importance-weighted autoencod
 * Contents
 {:toc}
 
-## **1. Importance Weighted Autoencoders**
+## 1. Importance Weighted Autoencoders
 Recall that the setup is that we are attempting to model the log-marginal likelihood $\log p(x)$ over some given data $x$. The evidence lower bound (ELBO) lower bounds (surprise!) $\log p(x)$ with gap given by the KL divergence between the learnt approximation $q_{\lambda}(z)$ and the true posterior $p(z \vert x)$. We want to maximize the lower bound with respect to the variational parameters $\lambda$ of $q_{\lambda}$. For more information check out this [earlier primer post]({% post_url 2020-06-15-LVM-primer %}).
 
 $$\begin{align}
@@ -25,7 +25,7 @@ $$\begin{align}
 
 Of course the natural question is if we can reduce this gap, and the answer happens to be yes, without too much effort.
 
-### **1.1 Heuristic Motivation**
+### 1.1 Heuristic Motivation
 Let $R$ be a random variable such that $\mathbb{E}\left[R\right] = p(x)$. Then we have:
 
 \begin{equation}
@@ -52,7 +52,7 @@ $$ \log(\mu + R - \mu) = \log \mu + \log\left(1 + \frac{R-\mu}{\mu}\right) $$
 
 This suggests we should look for a function of $R$ with the same mean but lower variance, one easy possibility is just the sample mean $R_K = \frac{1}{K}\sum_{k=1}^K R_k$. Then, as each $R_k$ has identical mean $p(x)$, we still have $\log p(x) \geq \E{}{\log R_K}$, but now this gives a tighter bound by a factor of $1/K$, with the caveat that $\vert \frac{R-p(x)}{p(x)} \vert < 1$. So using more importance samples $K$ helps us pump those rookie numbers up.
 
-### **1.2. The Importance-Weighted ELBO**
+### 1.2. The Importance-Weighted ELBO
 We can connect this back to variational inference by letting $R$ have the following form:
 
 \begin{equation}
@@ -74,7 +74,7 @@ $$\begin{align}
 
 Our argument makes it fairly intuitive that the IW-ELBO _should_ be a consistent estimator with convergence rate linear in $K$, but we  need to tread more carefully to properly understand the asymptotics, by showing the remainder term in the Taylor expansion goes to zero as $K \rightarrow \infty$. Rainforth et. al. [[2]](#2) and Domke and Sheldon [[3]](#3) provide rigorous bounds on the asymptotic error term.
 
-### **1.3. IWAE in `Jax`**
+### 1.3. IWAE in `Jax`
 Here's a barebones implementation of learning this bound with an amortized diagonal-Gaussian encoder/decoder pair in Jax, more details to follow in the next post. Note that easy vectorization in Jax makes this an almost trivial extension of the single importance sample VAE case.
 
 
@@ -102,11 +102,11 @@ First some convenience functions to evaluate the log-density of a diagonal Gauss
 def iw_estimator(x, rng, enc_params, dec_params):
 
     # Sample from q(z|x) by passing data through encoder and reparameterizing
-    z_mean, z_logvar = encoder(x, ...)  # Omit some technical details here
+    z_mean, z_logvar = encoder(x, enc_params)
     qzCx_stats = (z_mean, z_logvar)
     z_sample = diag_gaussian_sample(rng, *qzCx_stats)
     # Sample from p(x|z) by sampling from q(z|x), passing through decoder
-    x_mean, x_logvar = decoder(z_sample, ...)  # Omit some technical details here
+    x_mean, x_logvar = decoder(z_sample, dec_params)
     pxCz_stats = (x_mean, x_logvar)
     
     log_pxCz = diag_gaussian_logpdf(x, *pxCz_stats)

@@ -147,10 +147,27 @@ $$\begin{align}
 
 Reparameterization rocketed to prominence owing to its use in variational autoencoders and normalizing flows, where the base distribution $p(\epsilon)$ is typically taken to be the standard Gaussian, and the transformation $g$ is represented by some sort of neural network architecture. Here the variational parameters $\lambda$ are not learnt per-datapoint but taken to be the parameters of $g$.
 
-# **4. What can I do with $\log p(x)$?**
+
+# **4. Amortized Inference**
+
+By phrasing the variational inference problem as maximization of the \textsc{elbo} w.r.t. to variational parameters $\lambda$ - we effectively have to learn a separate approximate posterior $q_{\lambda}(z)$ for each instance $x$. What is done in practice instead is to represent the posterior approximation $q_{\lambda}(z)$ by a mapping $M_{\phi}: \mathcal{X} \rightarrow \Lambda$ between the input space $\mathcal{X}$ and the space of distribution parameters for the approximate posterior $\Lambda$, with parameters $\phi$. Instead of learning per-datapoint variational parameters $\lambda$, we instead learn a set of common parameters $\phi$ that can be used to output the distribution parameters for all datapoints. The posterior distribution obtained using this amortized inference method is typically written as $q_{\phi}(z \vert x)$, and the problem of approximate inference changes like so:
+
+$$\begin{equation}
+    \argmin_{\lambda} \E{q_{\lambda}(z)}{\log \frac{q_{\lambda}(z)}{p(z \vert x)}} \text{for each} \; x^{(i)} \rightarrow \argmin_{\phi} \E{p(x)}{\E{q_{\phi}(z \vert x)}{\log \frac{q_{\phi}(z \vert x)}{p(z \vert x)}}}
+\end{equation}$$
+
+The idea here is that we pay a large upfront cost - optimization of the mapping parameters $\phi$, and amortize this cost over test time - we do not have to run the optimization to learn variational parameters of unseen data as the the approximate posterior for new points is defined by this learnt mapping. This method is less flexible in general than learning per-datapoint variational parameters $\lambda$, as there are now two sources of approximation error - one from the restricted form of the distributions $q_{\phi}$ and the other from the dependence of the distribution on some learnt mapping which essentially performs interpolation between training instances to output the distribution parameters of unseen instances. On the upside, constraining the variational distribution to be the output of some common map may have a regularizing effect on the overall model.
+
+The most common example of an amortized model is restricting the approximate posterior to be Gaussian distributions with diagonal covariance, where the mean and variance are output by the mapping $M_{\phi}$, typically some sort of neural network:
+
+$$\begin{equation}
+    \mu_{\phi}(x), \Sigma_{\phi}(x) = M_{\phi}(x); \quad q_{\phi}(z \vert x) = \mathcal{N}\left( z \vert \mu_{\phi}(x), \Sigma_{\phi}(x)\right)
+\end{equation}$$
+
+# **5. What can I do with $\log p(x)$?**
 Assume that our primary objective is distribution modelling - we are not interested in the latent variables for the time being, treating them as some sort of mathematical sleight of hand to efficiently evaluate the objective $\log p(x)$. Estimating this objective has two main applications. Below let the true data distribution be $p^*(x)$ and make explicit the model parameters by writing the estimate as $p_{\theta}(x)$.
 
-## 4.1. Density Estimation
+## 5.1. Density Estimation
 Here we would like to find a reliable estimate of the log-probability of a given observation $x$. This can be achieved by minimizing the 'forward' KL divergence between the true distribution and the model distribution:
 
 $$\begin{align}
@@ -172,7 +189,7 @@ Unlike the forward-KL, reverse-KL requires explicit evaluation of the (possibly 
 
 Note that the reverse-KL objective can be minimized by maximization of the entropy $\mathbb{H}(p_{\theta})$, which corresponds to minimization of $\log p_{\theta}(x)$. This is in the 'morally wrong direction' to how we are optimizing the ELBO - we are attempting to minimize a lower bound. This is problematic as minimization of $\log p_{\theta}(x)$ can be achieved through artificial deterioration of the bound, optimizing $\theta$ to maximize the gap $\kl{q_{\lambda}(z)}{p(z\vert x)}$ between the ELBO and $\log p_{\theta}(x)$ instead of minimizing the true objective. In contrast to the forward KL, the reverse KL incurs a large penalty if $p_{\theta}(x)$ is nonzero wherever $p^\*(x)$ is close to zero, so models trained under the reverse KL will be more conservative with probability mass and underestimate the support of $p^\*(x)$.
 
-## 4.2. Approximate Sampling 
+## 5.2. Approximate Sampling 
 Another application is to generate samples from the target distribution $p^*(x)$ using the model $p_{\theta}$ as a surrogate. This is achieved by sampling from the approximate posterior in latent space and subsequently sampling from the conditional model:
 
 $$\begin{equation}
