@@ -116,6 +116,9 @@ $$\begin{align}
  
 - Unlike the gradient, the term $f(z_k; \lambda) + \nabla_{\lambda} f(z_k; \lambda)$ is sensitive to constant shifts in the objective function $f$, which may be undesirable for optimization. Even worse, the convergence rate is dependent on the magnitude of the largest reward - if $f(z; \lambda)$ is shifted by a large constant, this will increase runtime, despite the ordering of the rewards remaining the same. 
  
+- There is also an upside that comes from not using the gradients w.r.t. $\lambda$: in situations where the gradient is not defined, such as in discrete latent variable models, the score function estimator may be used for optimization (albeit with high variance). 
+ 
+ 
 ## 3.2. Reparameterization
  Sometimes also known as the pathwise estimator. The core idea is that, for certain classes of distributions, samples from $q_{\lambda}(z)$ may be expressed as $\lambda$-dependent deterministic transformations from some base distribution which is independent of $\lambda$:
  
