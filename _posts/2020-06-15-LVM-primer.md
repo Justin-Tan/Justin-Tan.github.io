@@ -9,7 +9,8 @@ image: /assets/images/shell_web1.png
 excerpt_separator: <!--more-->
 ---
 
-This post is meant to serve as a quick primer on latent variable models. We'll walk through a straightforward derivation of the evidence lower bound and then examine how this can be used for density estimation / sampling.<!--more--> If you're already familiar with this material, only the last section may be of interest to you. 
+This post serves as an easy-to-update personal encyclopedia about latent variable models. Starts with a straightforward derivation of the evidence lower bound and then examines modern techniques used in variational inference.<!--more-->  
+
 * Contents
 {:toc}
 
@@ -110,11 +111,11 @@ $$\begin{align}
      &= \nabla_{\lambda} (1) = 0.
  \end{align}$$
  
- - So if $f(z; \lambda)$ can take on large values - which is possible during the early stages of training if $f$ is something like a log-likelihood, then the Monte Carlo estimate of the gradient will oscillate wildly around zero, making convergence difficult. There exist numerous variance-reduction technqiues to make the score function estimator usable. 
+ So if $f(z; \lambda)$ can take on large values - which is possible during the early stages of training if $f$ is something like a log-likelihood, then the Monte Carlo estimate of the gradient will oscillate wildly around zero, making convergence difficult. There exist numerous variance-reduction technqiues to make the score function estimator usable. `TODO`: update in later note.
  
-- If the first term $\nabla_{\lambda} \log q_{\lambda}(z) f(z_k; \lambda)$ dominates the gradient estimate, then we receive a large contribution to the gradient from a term that does not depend on the gradient - reminiscent of random search behaviour, which rewards 'good samples' proportional to the reward they receive without any systematic way of identifying good samples beyond sampling.
+- If the first term $\nabla_{\lambda} \log q_{\lambda}(z) f(z_k; \lambda)$ dominates the gradient estimate, then we receive a large contribution to the gradient from a term that does not depend on the gradient - reminiscent of random search behaviour, we move in the direction of the score function proportional to the reward $f(z_k)$ received by the sample point $z_k$ without any systematic way of identifying good samples beyond random sampling.
  
-- Unlike the gradient, the term $f(z_k; \lambda) + \nabla_{\lambda} f(z_k; \lambda)$ is sensitive to constant shifts in the objective function $f$, which may be undesirable for optimization. Even worse, the convergence rate is dependent on the magnitude of the largest reward - if $f(z; \lambda)$ is shifted by a large constant, this will increase runtime, despite the ordering of the rewards remaining the same. 
+- Unlike the gradient, the term $\log q_{\lambda}(z) f(z_k; \lambda) + \nabla_{\lambda} f(z_k; \lambda)$ is sensitive to constant shifts in the objective function $f$, which may be undesirable for optimization. Even worse, the convergence rate is dependent on the magnitude of the largest reward - if $f(z; \lambda)$ is shifted by a large constant, this will increase runtime, despite the ordering of the rewards remaining the same. 
  
 ## 3.2. Reparameterization
  Sometimes also known as the pathwise estimator. The core idea is that, for certain classes of distributions, samples from $q_{\lambda}(z)$ may be expressed as $\lambda$-dependent deterministic transformations from some base distribution which is independent of $\lambda$:

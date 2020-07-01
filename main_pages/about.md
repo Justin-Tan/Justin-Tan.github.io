@@ -5,7 +5,7 @@ permalink: /about/
 ---
 
 # About
-This is a site that stores extended notes on material I find interesting, mainly on math and machine learning. Hopefully these posts will be of use or interest to you. 
+This is a site that stores extended notes on material I find interesting, mainly on math and machine learning. By clearly explaining the things I know now here, future me wastes less time looking stuff up. Hopefully these posts will be of use or interest to you. 
 ## Personal Interests:
 Bruce Springsteen, hanging out with my neighbour's cat, soccer. Sometimes machine learning.
 
