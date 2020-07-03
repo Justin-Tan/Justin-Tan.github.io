@@ -33,7 +33,7 @@ $$\begin{equation}
     p(x) = \int_{\mathcal{Z}} dz \; p(x \vert z) p(z).
 \end{equation}$$
 
-But this is difficult to do! The more complex your conditional $p(x \vert z)$ is, the worse of a time you'll have trying to evaluate this. This integral has a time complexity exponential in $\text{dim}(\mathcal{Z})$ even for a simple conditional like a mixture of Gaussians, and analytic solutions and tractability go out the window the second you introduce neural networks into the mix.
+But this is difficult to do! The more complex your conditional $p(x \vert z)$ is, the worse of a time you'll have trying to evaluate this. This integral has a time complexity exponential in $\text{dim}(\mathcal{Z})$ even for a simple conditional like a mixture of Gaussians, and analytic solutions and tractability go out the window once you begin to model the conditional through some complex nonlinear mapping (e.g. neural networks).
 
 # **2. Approximating $p(z \vert x)$**
 To circumvent the direct computation of $p(x)$, it is common to approximate the model posterior by a simpler distribution - one that allows efficient evaluation and sampling. Denote this approximating distribution with parameters $\lambda$ as $q_{\lambda}(z)$. Then we would like to find the distribution $q_{\lambda}(z)$ in some restricted family of 'nice' distributions $\mathcal{Q}$ that is as close as possible to the true posterior in terms of some sort of discrepancy function between distributions. The canonical choice is the 'reverse' KL divergence $\kl{q_{\lambda}(z)}{p(z \vert x)}$:
