@@ -172,15 +172,10 @@ class IWAE(VAE):
         super(IWAE, self).__init__(input_dim, hidden_dim, latent_dim)
         self.num_i_samples = num_i_samples
 
-    def _inflate(self, t, n_copies):
-        original_dims = t.size()
-        t = torch.unsqueeze(torch.squeeze(t), dim=0)
-        return t.expand((n_copies,) + tuple(-1 for d in original_dims))
 
-    def elbo(self, x, pxCz_stats, z_sample, qzCx_stats):
+    def log_px_estimate(self, x, pxCz_stats, z_sample, qzCx_stats):
 
-        x = self._inflate(x, self.num_i_samples)
-        x = x.reshape(x.shape[0]*x.shape[1], -1)
+        x = torch.repeat_interleave(x, self.num_i_samples, dim=0)
         
         # [n*B,1]
         log_pz = math.log_density_gaussian(z_sample).sum(1, keepdim=True)
@@ -199,15 +194,13 @@ class IWAE(VAE):
         Tighten lower bound by reducing variance of marginal likelihood
         estimator through the sample mean.
         """
-        collapse = lambda x: x.reshape((x.shape[0]*x.shape[1], x.shape[2]))
 
         qzCx_stats = self.encoder(x)
         mu_z, logvar_z = qzCx_stats  # [B,D]
         
         # Repeat num_i_samples times along batch dimension - [n,B,D]
-        mu_z = self._inflate(mu_z, self.num_i_samples) 
-        logvar_z = self._inflate(logvar_z, self.num_i_samples)
-        mu_z, logvar_z = collapse(mu_z), collapse(logvar_z)  # [n*B,D]
+        mu_z = torch.repeat_interleave(mu_z, num_i_samples, dim=0)
+        logvar_z = torch.repeat_interleave(logvar_z, num_i_samples, dim=0)
         qzCx_stats = (mu_z, logvar_z)
 
         # Sample num_i_samples for each batch element
