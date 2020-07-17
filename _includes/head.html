@@ -21,7 +21,9 @@
     {% endif %}
   
     <!-- Stats -->
+    {% if jekyll.environment == 'production' %}
     {% include google_analytics.html %}
+    {% endif %}
   
     <!-- Favicons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicons/apple-touch-icon.png">
