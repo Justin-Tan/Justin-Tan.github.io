@@ -10,7 +10,7 @@ image: /assets/images/shell_web.jpg
 excerpt_separator: <!--more-->
 ---
 
-Here we'll give a quick and dirty sketch about why importance-weighted autoencoders provide a lower bound on the log-marginal likelihood $\log p(x)$, then walk through a fast implementation in Jax.<!--more-->
+Here we'll give a quick and dirty sketch about why importance-weighted autoencoders provide a lower bound on the log-marginal likelihood $\log p(x)$, then walk through a fast implementation in Jax.<!--more--> If you just want the Jax skip to Section 1.3.
 
 * Contents
 {:toc}
@@ -163,7 +163,7 @@ NIPS (2018).
 
 ## Appendix: Pytorch Implementation
 
-We omit the standard helper functions below for brevity. Imagine we had some standard `VAE` class with all the base functionality. There may be a more efficient way to do this in Torch rather than brute-force duplication along the batch axis, but it is reasonably fast with no significant slowdown for up to 256 importance samples using a batch size of 512 and input data with dimension 64. Note that, unlike Jax, a lot of the code is concerned with manually batching the importance samples into a single matrix for efficient vectorization. 
+We omit the standard helper functions below for brevity. Imagine we had some standard `VAE` class with all the base functionality. There may be a more efficient way to do this in Torch rather than brute-force duplication along the batch axis, but it is reasonably fast with no significant slowdown for up to 256 importance samples using a batch size of 512 and input data with dimension 64. Note that, unlike Jax, a lot of the code is concerned with manually batching the importance samples into a single matrix for efficient vectorization. A more elegant implementation may be possible using the excellent `torch.Distributions`, but it's nice to do things explicitly where possible.  
 
 {% highlight python %}
 class IWAE(VAE):
