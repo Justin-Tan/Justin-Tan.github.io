@@ -2,7 +2,7 @@
 layout: post
 title: "Latent Variable Models in Jax"
 subtitle: "For density estimation/sampling."
-date: 2020-06-22
+date: 2020-07-21
 categories: machine-learning, latent-variables, jax
 usemathjax: true
 readtime: True
@@ -10,7 +10,7 @@ image: /assets/images/shell_web.jpg
 excerpt_separator: <!--more-->
 ---
 
-In this post we'll examine applications of LVMs to density estimation/approximate sampling. We'll implement the recently proposed SUMO (Stochastically Unbiased Marginalization Objective) in Jax, highlighting how Jax differs from standard Autodiff frameworks in some major aspects.<!--more-->  We end with the obligatory illustrative toy problem. If you are only interested in the practical part, skip to Section 2 or check out the [associated repository on Github](https://github.com/justin-tan/density_estimation_jax). This post did turn out longer than expected, so fair warning! There's a nice picture of my neighbour's cat at the end for some extra motivation.
+In this post we'll examine applications of latent variable models to density estimation/approximate sampling. We'll implement the recently proposed SUMO (Stochastically Unbiased Marginalization Objective) in Jax, highlighting how Jax differs from standard Autodiff frameworks in some major aspects.<!--more-->  Section 1 concerns the derivation of the SUMO objective. Section 2 walks through the Jax implementation, while section 3 contains the obligatory toy problem. This post did turn out longer than expected, so you may want to take a breather between sections. If you are only interested in the practical part, skip to Section 2 or check out the [associated repository on Github](https://github.com/justin-tan/jax_sumo).
 
 * Contents
 {:toc}
@@ -97,11 +97,11 @@ Where $\nabla_{\phi}\left(\E{q_{\phi}, \, p(K)}{\textrm{SUMO}(x)}\right)^2= \nab
 - Automatic parallelization of code across multiple devices through `jax.pmap`.
 - Automatic generation of [optimized computation kernels](https://www.tensorflow.org/xla) through `jax.jit`.
 
-All the above primitives can be arbitrarily composed as well. From my experience, Jax was easy to come to grips with, sharing much of its minimalist interface with `numpy`/`scipy` and is blazingly fast out-of-the-box - switching from CPU to GPU/TPU 'just works', and it is straightforward to fuse your code into performant kernels or parallelize across multiple devices. 
+All the above primitives can be arbitrarily composed as well. From my experience, Jax was easy to come to grips with, sharing much of its minimalist interface with `numpy`/`scipy`. Furthermore, it's blazingly fast out-of-the-box - switching from CPU to GPU/TPU requires almost no work, and it is straightforward to fuse your code into performant kernels or parallelize across multiple devices. 
 
 However, Jax adopts a functional programming, as opposed to an object-oriented model, in order for function transformations to work nicely. This imposes certain constraints that may be unnatural to users accustomed to machine learning frameworks written in Python (Torch/Tensorflow). Python functions subject to transformation/compilation in Jax must be functionally pure: all the input data is passed through the function parameters, and all the results are output through the returned function values - there should be no dependence on global state or additional 'side-effects' beyond the return values. This can be somewhat vexing to those of us accustomed to calling `loss.backward()` in Torch - in fact, there's a [very long list of common gotchas in Jax](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html) associated with this functionally pure constraint, but we'll see that this is not too big a barrier once you get used to it.
 
-This section is quite long, but implementing and optimizing the SUMO estimator will force us to deal with a surprisingly large cross-section of Jax, together with many, many gotchas (at the time of writing this, as of v0.1.69). 
+This section is quite long, but implementing and optimizing the SUMO estimator will force us to deal with a surprisingly large cross-section of Jax, together with a large volume of gotchas (at the time of writing this, as of v0.1.69). 
 
 ## 2.1. Defining the IW-ELBO
 
@@ -185,7 +185,9 @@ x_output_shape, init_decoder_params = decoder_init(dec_init_rng, (-1, latent_dim
 Next we define the log of the summand of the IW-ELBO estimator - i.e. $\log \frac{p(x, z_k)}{q(z_k \vert x)},  z_k \sim q$:
 {% highlight python %}
 def iw_estimator(x, rng, encoder, enc_params, decoder, dec_params):
-
+    """
+    Single-sample estimator of the ELBO
+    """
     # Sample from q(z|x) by passing data through encoder and reparameterizing
     z_mean, z_logvar = encoder(enc_params, x)  # Encoder fwd pass
     qzCx_stats = (z_mean, z_logvar)
@@ -224,18 +226,14 @@ def iwelbo_amortized(x, rng, enc_params, dec_params, num_samples=32, *args, **kw
     return iwelbo_K
 {% endhighlight %}
 
-First, we split the `rng` states into `num_samples` new states, one for each importance sample. Next we make use of [`jax.vmap`](https://jax.readthedocs.io/en/latest/jax.html#jax.vmap) - one of the 'killer features' of Jax. This function vectorizes a function over a given axis of the input, so the function is evaluated in parallel across the given axis. A trivial example of this would be representing a matrix-vector operation as a vectorized form of dot products between each row of the matrix and the given vector, but `vmap` allows us to (in most cases) vectorize more complicated functions where it is not obvious how to manually 'batch' the computation. `vmap` takes in three arguments:
-
-- `fun`: This is the function to vectorize, in this case the function which computes the log of the summand for the IW-ELBO, we want to compute this in parallel across all the importance samples.
-- `in_axes`: This is a tuple/integer specifying which axes of the input the function should be parallelized with respect to. In this case, our function has multiple arguments, so `in_axes` is a list/tuple of length given by the number of arguments to `fun`. Each element of `in_axes` represents the array axis to map over for the corresponding argument. A `None` means to not parallelize over this argument. Here the arguments of `iw_estimator` are `(x, rng, enc_params, dec_params)` - the input, PRNG state, and amortized encoder/decoder parameters, respectively. The input and the amortized parameters are constant for all importance samples, so the only argument we want the function to be parallelized over is the PRNG state. As `rngs` is a one-dimensional array, we want to parallelize over the first (`0`th) dimension, so `in_axes = (None, 0, None, None)`.
-- `out_axes`: Similar definition to `in_axes`, but specifying which axis of the function output the vectorized result should appear. This is usually `0` (the default) in most cases, following the standard convention of letting the first axis of an array represent the number of batch elements.
+First, we split the `rng` states into `num_samples` new states, one for each importance sample. Next we make use of [`jax.vmap`](https://jax.readthedocs.io/en/latest/jax.html#jax.vmap) - one of the 'killer features' of Jax. This function vectorizes a function over a given axis of the input, so the function is evaluated in parallel across the given axis. A trivial example of this would be representing a matrix-vector operation as a vectorized form of dot products between each row of the matrix and the given vector, but `vmap` allows us to (in most cases) vectorize more complicated functions where it is not obvious how to manually 'batch' the computation. For brevity, you can read more about `vmap` via the [documentation](https://jax.readthedocs.io/en/latest/jax.html#jax.vmap) or [this previous post.]({% post_url 2020-06-20-Intuitive-Importance-Weighted-ELBO-Bounds%})
 
 The return result of `vmap` is the vectorized version of `iw_estimator`, which we call to get a vector, `iw_log_summand`, representing the log-summands $\log p(x \vert z_k) + \log p(z_k) - \log q(z_k \vert x)$ for each importance sample $z_k$. This will be a one-dimensional array with number of elements given by the number of importance samples $K$. Finally for numerical stability we take the $\text{logsumexp}$ of the log-summands and average this to give the final IW-ELBO(K). Note that parallelization was near-automatic here for the computation of the different importance sample summands using `vmap` - we didn't have to keep track of a cumbersome batch dimension anywhere.
 
 
 ## 2.2. Defining the SUMO estimator
 
-The SUMO estimator is simple to implement, here are the basic steps:
+The SUMO estimator is pleasingly simple to implement, here are the basic steps:
 
 1. Sample stopping time $K \sim p(\mathcal{K})$. In practice to lower variance the authors choose to compute at least $m$ terms, so the total number of terms evaluated in the partial sum is $K+m$.
 2. Sample $z_k\sim q(z \vert x)$ for $k=1,\ldots, K+m$.
@@ -243,16 +241,45 @@ The SUMO estimator is simple to implement, here are the basic steps:
 4. Compute $\textrm{IW-ELBO}(k) = \texttt{logcumsumexp}\left(\log w_k\right) - \log(k)$. 
 5. Return: $\textrm{IW-ELBO}(m) + \sum_{k=m}^{K+m} \Delta_k(x) \, / \, \mathbb{P}(\mathcal{K} \geq k)$.
 
-We already did steps 2 and 3 above, let's focus on step 1 - the authors propose the following tail distribution for the number of terms $\mathcal{K}$ to evaluate in the series: $\mathbb{P}(\mathcal{K} \geq k) = \frac{1}{k}$. This has CDF $F_{\mathcal{K}}(k) = \mathbb{P}(\mathcal{K} \leq k) = 1 - \frac{1}{k+1}$ and so by the inverse CDF transform $\left \lfloor{\frac{u}{1-u}}\right \rfloor \sim p(\mathcal{K})$, where $u \sim \text{Uniform}[0,1]$[^3]. 
+We already did steps 2 and 3 above, let's focus on step 1 - the authors propose the following tail distribution for the number of terms $\mathcal{K}$ to evaluate in the series: $\mathbb{P}(\mathcal{K} \geq k) = \frac{1}{k}$. This has CDF $F_{\mathcal{K}}(k) = \mathbb{P}(\mathcal{K} \leq k) = 1 - \frac{1}{k+1}$ and so by the inverse CDF transform $\left \lfloor{\frac{u}{1-u}}\right \rfloor \sim p(\mathcal{K})$, where $u \sim \text{Uniform}[0,1]$[^3]. To reduce the possibility of sampling large stopping times, they flatten the tails of the CDF by heavily penalizing the probability of $k > 80$:
 
-# 3. Approximate Sampling
-Here we would like to generate samples from the target distribution $p^*(x)$ using the model $p_{\theta}$ as a surrogate. This is achieved by sampling from the approximate posterior in latent space and subsequently sampling from the conditional model:
+{% highlight python %}
+def reverse_cdf(k, alpha=80, b=0.1):
+    return torch.where(k < alpha, 1./k, 1./alpha * (1-b)**(k-alpha))
+{% endhighlight %}
 
-$$\begin{equation}
-    x \sim p_{\theta}(x) \equiv z \sim q_{\lambda}(z), \: \: x \sim p_{\theta}(x \vert z)
-\end{equation}$$
+We can tie this all together in the following function:
 
-If we are given some density $p^*(x) \propto \exp\left(-U(x)\right)$, where $U(x)$ is some energy function, the reverse-KL objective can be efficiently optimized for this purpose:
+{% highlight python %}
+@partial(jit, static_argnums=(4, 5,))
+def SUMO(x, rng, enc_params, dec_params, K, m=16, *args, **kwargs):
+
+    rngs = random.split(rng, K+m)
+
+    # Step 2, 3
+    vec_iw_estimator = vmap(iw_estimator, in_axes=(None, 0, None, None))
+    log_iw = vec_iw_estimator(x, rngs, enc_params, dec_params)
+
+    # Step 4
+    K_range = lax.iota(dtype=jnp.int32, size=K+m)+1
+    iwelbo_K = logcumsumexp(log_iw) - jnp.log(K_range)
+
+    # Step 5
+    vec_reverse_cdf = vmap(reverse_cdf, in_axes=(0,))
+    inv_weights = jnp.divide(1., vec_reverse_cdf(K_range[m:]))
+    return iwelbo_K[m-1] + jnp.sum(inv_weights * (iwelbo_K[m:] - iwelbo_K[m-1:-1]))
+{% endhighlight %}
+
+### 2.2.1. `jit` Technicalities
+What's this business with the decorator? When Jax analyzes a function to compile using `jax.jit`, it passes an abstract value in lieu of an actual array for each argument, called a _tracer value_. These arrays are used to characterize what the function does on abstract Python objects - in most cases an array of floats - in order to be compiled using XLA. Tracer values share some functionality with `ndarray` - you can call `.shape` on these, for example - but forcing these to commit to specific numerical values will throw an error. Their only purpose is to characterize the behaviour of the function on a restricted set of possible inputs in order to be `jit`-compiled. 
+
+Tracer values are passed for each argument to the `jit`-transformed function, with the exception of those arguments identified as `static_argnums` by `jit`. These will remain regular values and treated as constant during compilation - with the caveat that when these arguments change, the function must be `jit`-compiled again. Hence, as the name suggests, `static_argnums` should not change too much to avoid incurring overhead from repeated compilation. Functions such as `random.split` and `lax.iota` do not accept tracer values as arguments, so we are forced to keep the sampled stopping time $K$ and minimum number of terms $m$ as regular Python values. This means, unfortunately, that each batch is restricted to use the same value of $K$ if we want to use `jit`. To counteract this, we can use a small batch size. For a more detailed discussion, you can read the [Jax FAQ](https://jax.readthedocs.io/en/latest/faq.html#abstract-tracer-value-encountered-where-concrete-value-is-expected-error) and the discussion within this [Github issue.](https://github.com/google/jax/issues/196)
+
+
+# 3. Density Matching
+Here we'll look at an interesting application of SUMO to approximate sampling via density matching. This is the 'flip' side of the coin to density estimation. Here we are given some complex target distribution $p^\*(x) \propto \exp\left(-U(x)\right)$, where $U(x)$ is some energy function. Often no sampling procedure exists and we would like to generate samples from the target distribution $p^*(x)$ using the learned model $p_{\theta}$ as a surrogate. 
+
+With the analytical form of the target density the reverse-KL objective can be efficiently optimized for this purpose:
 
 $$\begin{align}
     \mathcal{L}(\theta) = \kl{p_{\theta}(x)}{p^*(x)} &= \E{p_{\theta}(x)}{\log \frac{p_{\theta}(x)}{p^*(x)}} \\
@@ -260,10 +287,15 @@ $$\begin{align}
     &= -\mathbb{H}(p_{\theta}) + \E{p_{\theta}(x)}{U(x)} + \text{const.}
 \end{align}$$
 
-The target distribution $p^*$ in this case is defined as (originally proposed in [[4]](#4)):
+Sampling from the surrogate $p_{\theta}$ may be achieved by sampling from the prior or approximate posterior in latent space and subsequently sampling from the conditional model:
+
+$$\begin{equation}
+    x \sim p_{\theta}(x) \equiv z \sim q_{\lambda}(z), \: \: x \sim p_{\theta}(x \vert z)
+\end{equation}$$
+
+Note the presence of an entropy maximization term in the reverse-KL objective - this translates to minimization of $\log p_{\theta}(x)$ for samples drawn from the surrogate $p_{\theta}$. If we only have access to a lower bound of $\log p_{\theta}$, as in the case of the standard ELBO, then we are minimizing a lower bound - of course, this is in the morally wrong direction. A decrease in the objective can be achieved by deterioration of the tightness of the bound - i.e. an increase in bias rather than actual minimization of $\log p_{\theta}(x)$. The target distribution $p^*$ in this case is defined as (originally proposed by Neal, 2003 [[4]](#4)):
 
 $$ p^*(x_0,x_1) = \mathcal{N}\left(x_0 \vert 0, \exp(2 x_1)\right) \cdot \mathcal{N}(x_1 \vert 0, 1.35^2) $$
-
 {% highlight python %}
 import jax.scipy.stats.norm as norm
 def funnel_log_density(x):
@@ -271,18 +303,163 @@ def funnel_log_density(x):
            norm.logpdf(x[1], 0, 1.35)
 {% endhighlight %}
 
-
-The distribution is shaped like a funnel, with a sharp neck in $x_0$ as the variance is exponential in $x_1$. Note we can straightforwardly sample from $p^*$ by reparameterization: $x_0 = \exp(x_1) \cdot \epsilon$, $x_1 = 1.35 \cdot \epsilon$, where $\epsilon \sim \mathcal{N}(0,1)$, but we'll see how SUMO fares.
+The distribution is shaped like a funnel (see Section 3.3.), with a sharp neck in $x_0$ as the variance is exponential in $x_1$. Note we can straightforwardly sample from $p^*$ by reparameterization: $x_0 = \exp(x_1) \cdot \epsilon$, $x_1 = 1.35 \cdot \epsilon$, where $\epsilon \sim \mathcal{N}(0,1)$, but we'll see how SUMO fares.
 
 ## 3.1. Objective Function
 
+First we'll define a function that allows us to sample from the surrogate model. Here we sample from the latent prior and then pass this through the amortized decoder to yield samples $x \sim p_{\theta}$. 
+
+{% highlight python %}
+def generate_samples(rng, enc_params, dec_params, x=None):
+    x_rng, z_rng = random.split(rng, 2)
+
+    if x is None:
+        # Sample from standard Gaussian prior
+        mu_z, logvar_z = jnp.zeros(latent_dim), jnp.zeros(latent_dim)
+    else:
+        mu_z, logvar_z = encoder_forward(enc_params, x)
+    z_sample = diag_gaussian_sample(z_rng, mu_z, logvar_z)
+    mu_x, logvar_x = decoder_forward(dec_params, z_sample)
+    x_sample = diag_gaussian_sample(x_rng, mu_x, logvar_x)
+    return x_sample
+{% endhighlight %}
+
+
+Next we specify a function, `reverse_kl`, that evaluates the reverse-KL objective for a single example between the target `log_prob` and our model estimate `log_px_estimator`. The function `batch_reverse_kl` applies the vectorizing operator to the single-sample `reverse_kl` function so we can operate over a batch of samples. Again, the objective functions are made functionally pure by requiring the model parameters as arguments.
+
+{% highlight python %}
+def reverse_kl(log_prob, log_px_estimator, rng, enc_params, dec_params):
+    """
+    Single-sample Monte Carlo estimate of reverse-KL, used to 
+    approximate the target density p*(x)
+
+    D_KL(p(x) || p*(x)) = E_p[log p(x) - log p*(x)]
+    """
+    z_sample, x_sample, qzCx_stats, pxCz_stats = generate_samples(rng, enc_params, 
+        dec_params, x=None)
+    log_px = log_px_estimator(x_sample, rng, enc_params, dec_params, K, m)
+    reverse_kl = log_px - log_prob(x_sample)
+
+    return log_px, reverse_kl
+
+def batch_reverse_kl(log_prob, log_px_estimator, reverse_kl, rng, enc_params, 
+                     dec_params, num_samples):
+    # Average over a batch of random samples.
+    rngs = random.split(rng, int(num_samples))
+    vectorized_rkl = vmap(partial(reverse_kl, log_prob, log_px_estimator), 
+        in_axes=(0, None, None))
+    log_px_batch, reverse_kl_batch = vectorized_rkl(rngs, enc_params, dec_params)
+    return jnp.mean(reverse_kl_batch)
+{% endhighlight %}
+
+
 ## 3.2. Optimization
+Jax natively provides a [suite of optimizers](https://jax.readthedocs.io/en/latest/jax.experimental.optimizers.html) for use. In order for the optimization procedure to be functionally pure, optimizers in Jax are defined as an `(init_fun, update_fun, get_params)` triple of functions:
 
-## 3.3. Nice Plots
+* `init_fun` sets the initial optimizer state from the initial values of the model parameters:
 
+{% highlight python %}
+opt_state = opt_init(init_model_params)
+{% endhighlight %}
+
+* `update_fun` updates the internal state of the optimizer, based on the gradients of the objective function with respect to the model parameters:
+
+{% highlight python %}
+opt_state = update_fun(t, gradient, opt_state)  # t: iteration index
+{% endhighlight %}
+
+* `get_params` returns the updated model parameters extracted from the internal optimizer state.
+
+{% highlight python %}
+model_params = get_params(opt_state)
+{% endhighlight %}
+
+The end result is that the model parameters are passed into their respective optimizers, and the updated model parameters are returned after taking some gradient step. We'll use the ubiquitious Adam optimizer, defining separate optimizers for the amortized encoder and decoder.
+
+{% highlight python %}
+dec_opt_init, dec_opt_update, get_dec_params = optimizers.adam(step_size=5e-5)
+dec_opt_state = dec_opt_init(init_decoder_params)
+
+enc_opt_init, enc_opt_update, get_enc_params = optimizers.adam(step_size=5e-5)
+enc_opt_state = enc_opt_init(init_encoder_params)
+{% endhighlight %}
+
+Armed with this knowledge, we can package together gradient calculation and parameter updates for the encoder and decoder into separate functions. Note below the parameters of the encoder are optimized to minimize the variance of the SUMO estimator.
+
+{% highlight python %}
+@partial(jit, static_argnums=(3))
+def objective(t, enc_params, dec_params, maximize=False, num_samples=64):
+    rng = random.PRNGKey(t)
+    reverse_kl_batch = batch_reverse_kl(funnel_log_density, SUMO, reverse_kl, rng, 
+                                        enc_params, dec_params, num_samples)
+    if maximize is True:
+        return jnp.negative(reverse_kl_batch)
+    return reverse_kl_batch
+
+@jit
+def dec_update(t, dec_opt_state, enc_opt_state):
+    # Minimize objective w.r.t. decoder parameters
+    enc_params = get_enc_params(enc_opt_state)
+    dec_params = get_dec_params(dec_opt_state)
+    gradient = jax.grad(objective, argnums=2)(t, enc_params, dec_params, False)
+    dec_opt_state = dec_opt_update(t, gradient, dec_opt_state)
+
+    return get_dec_params(dec_opt_state), dec_opt_state
+
+@jit
+def enc_update_sumo(t, dec_opt_state, enc_opt_state, num_samples=128):
+    # Minimize variance of SUMO w.r.t. encoder parameters
+    rng = random.PRNGKey(t)
+    rngs = random.split(rng, int(num_samples))
+    enc_params = get_enc_params(enc_opt_state)
+    dec_params = get_dec_params(dec_opt_state)
+    
+    def _sumo_sq(rngs, enc_params, dec_params):
+        vectorized_rkl = vmap(partial(reverse_kl, funnel_log_density, SUMO), 
+            in_axes=(0,None, None))
+        log_px_batch, _ = vectorized_rkl(rngs, enc_params, dec_params)
+        return jnp.mean(jnp.square(log_px_batch))
+        
+    enc_gradient = jax.grad(_sumo_sq, argnums=1)(rngs, enc_params, dec_params)
+    enc_opt_state = enc_opt_update(t, enc_gradient, enc_opt_state)
+
+    return get_enc_params(enc_opt_state), enc_opt_state 
+{% endhighlight %}
+
+Note when taking gradients the `argnums` argument to `jax.grad` indicates the argument that the gradient of the function should be computed with respect to. Finally, we write a succinct training loop[^4]. A callback function is included to plot the learned densities periodically:
+
+{% highlight python %}
+total_iterations = 1e5
+for t in range(int(total_iterations)):
+
+    # Sample concrete value of K
+    K = jit(sampling_tail)(random.PRNGKey(t))
+    dec_params, dec_opt_state = dec_update(t, dec_opt_state, enc_opt_state)
+    enc_params, enc_opt_state = enc_update_sumo(t, dec_opt_state, enc_opt_state)
+
+    if t % 5000 == 0:
+        callback(t, params=(enc_params, dec_params))
+{% endhighlight %}
+
+
+If you are interested in the full codebase, you may find it in the [repository associated with this post](https://github.com/justin-tan/jax_sumo).
+
+
+## 3.3. Contour Density Plots
+Approximating the log-evidence of our surrogate model using SUMO and minimizing the reverse-KL objective allows our modest approximate sampler to learn the contours of the density; even handling the problematic neck of the funnel relatively well, excepting very low values in $y$. The below plots show the contours of the learned density with samples overlaid in blue. Training using SUMO is significantly more stable than using the IWELBO estimator for similar expected values of compute - for low values ok $K$, the KL-objective optimized under the IWELBO model eventually turns negative and veers toward instability, indicating the model is optimizing the bias rather than the actual objective. 
+
+![Image](/assets/plots/density_0.png)
+![Image](/assets/plots/density_10000.png)
+![Image](/assets/plots/density_20000.png)
+![Image](/assets/plots/density_30000.png)
+![Image](/assets/plots/density_40000.png)
+![Image](/assets/plots/density_50000.png)
+
+
+This was just a toy application for an unbiased estimator of $\log p_{\theta}(x)$. In the paper [[1]](#1), they apply this to more useful problems such as classic density estimation and entropy regularization in reinforcement learning.
 
 # Conclusion
-Jax has some very interesting design choices. In particular, automatic vectorization through `vmap`{:.python} helps with mental overhead a lot once you don't have to carry around a cumbersome batch dimension. Personally, there's not enough of a QoL improvement at the moment over Torch for me to port my existing libraries to Jax, but I do enjoy tinkering with it and its minimalism lends itself well to quick proof of concept sketches (provided you are well-acquainted with the sharp edges). Next we might implement some interesting continuous? normalizing flow variants, which could be really easy, or troublesome, depending on the behaviour of `jax.jit`{:.python}.
+Jax has some very interesting design choices. In particular, automatic vectorization through `vmap`{:.python} helps with mental overhead a lot once you don't have to carry around a cumbersome batch dimension. Personally, there's not enough of a QoL improvement at the moment over Torch for me to port my existing libraries to Jax, but I do enjoy tinkering with it and its minimalism lends itself well to quick proof of concept sketches (provided you are well-acquainted with the sharp edges). One nice use I found for it is a quick way to check correctness of Jacobian determinants computed by hand. Next in this unofficial series we might implement some interesting, possibly continuous, normalizing flow variants, which could be really easy, or troublesome, depending on the behaviour of `jax.jit`{:.python}.
 
 [^1]: We are abandoning any pretense of formality here, ignoring all prerequisite conditions on $p(K)$ and $\Delta_k$ - see Appendix A.2. of [[3]](#3) if you have aversion to mathematical sin.
 
@@ -290,10 +467,12 @@ Jax has some very interesting design choices. In particular, automatic vectoriza
 
 [^3]: To see this, note $F_{\mathcal{K}}\left(F^{-1}\_{\mathcal{K}}(k)\right) = 1 - \frac{1}{F^{-1}\_{\mathcal{K}}(k)+1} = k \implies F^{-1}_{\mathcal{K}}(k) = \frac{k}{1-k}$, then take the floor to map to an integer.
 
+[^4]: Yes, the stopping time K should really be passed as an argument all the way through to the SUMO function, but we omit this here for readability. 
+
 ## Credits
 1. [Rob Lange's blog post](https://roberttlange.github.io/posts/2020/03/blog-post-10/) was very helpful when wrangling over the optimization process for Jax.
-2. [The (quite large) Jax FAQ](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html) helped out a lot when I was banging my head against my keyboard - Jax error traces can be a bit ... cryptic. 
-3. [Bruce Springsteen](https://youtu.be/k1wqVIZR0ho?t=147) for providing the soundtrack for this post.
+2. [The (quite large) Jax FAQ](https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html) helped out a lot when I was banging my head against my keyboard - Jax error traces can be cryptic at the best of times. Hopefully this is one of the rough edges to be ironed out as development continues. 
+3. [Cory Wong](https://www.youtube.com/watch?v=CNvqMsUHrOs) for providing the soundtrack for this post.
 
 ## References
 
@@ -320,4 +499,4 @@ Annals of Statistics 31 (3): 705–67 (2003).
 
 
 ![Image](/assets/images/shell_web1.jpg)
-_Cat Tax._
+_You made it!_

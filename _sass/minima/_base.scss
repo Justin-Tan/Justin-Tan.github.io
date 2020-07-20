@@ -149,7 +149,7 @@ blockquote {
 pre,
 code {
   // font: $base-font-weight #{$base-font-size}/#{$base-line-height} $base-code-font-family;
-  @include relative-font-size(0.9375);
+  @include relative-font-size(0.82);
   border: 2px solid $code-border-color;
   border-radius: 0.5px;
   background-color: $code-background-color;
