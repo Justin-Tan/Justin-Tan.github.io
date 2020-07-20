@@ -2,7 +2,7 @@
 layout: post
 title: "Latent Variable Models in Jax"
 subtitle: "For density estimation/sampling."
-date: 2020-07-20
+date: 2020-07-21
 categories: machine-learning, latent-variables, jax
 usemathjax: true
 readtime: True
