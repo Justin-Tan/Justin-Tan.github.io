@@ -239,17 +239,17 @@ table {
   text-align: $table-text-align;
   color: lighten($text-color, 18%);
   border-collapse: collapse;
-  border: 1px solid $grey-color-light;
+  border: 2px solid $code-background-color;
   tr {
     &:nth-child(even) {
-      background-color: lighten($grey-color-light, 6%);
+      background-color: #192236; //lighten(#1a212d, 6%);
     }
   }
   th, td {
     padding: ($spacing-unit / 3) ($spacing-unit / 2);
   }
   th {
-    background-color: lighten($grey-color-light, 3%);
+    background-color: lighten($grey-color-dark, 3%);
     border: 1px solid darken($grey-color-light, 4%);
     border-bottom-color: darken($grey-color-light, 12%);
   }
@@ -257,3 +257,7 @@ table {
     border: 1px solid $grey-color-light;
   }
 }
+
+// border: 2px solid $code-border-color;
+// border-radius: 0.5px;
+// background-color: $code-background-color;
