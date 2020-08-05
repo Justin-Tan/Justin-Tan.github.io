@@ -151,7 +151,9 @@ $$\begin{align}
 q_X(\*x) = q_Z\left((f_{\lambda}^{-1}(\*x)\right) \; \left\vert \det \frac{\partial f_{\lambda}^{-1}(\*x)}{\partial \*x} \right\vert = q_Z(\*z) \; \left\vert \det \frac{\partial f_{\lambda}(\*z)}{\partial \*z} \right\vert^{-1}
 \end{align}$$
 
-Provided we can evaluate $$q_Z$$ and compute the determinant of the Jacobian of the transformation efficiently, $$q_X$$ offers an attractive way to approximate the minimum-variance distribution with $q_{\lambda}$, by optimizing the parameters of the transformation $$f_{\lambda}$$ to minimize $$ \kl{q^*}{q_{\lambda}}$$. This method appears to have been first proposed by Muller et. al., 2018 [[2]](#2), who apply this to calculating path integrals in light transport.
+As differentiability and invertibility are closed under composition, one can stack a sequence of transformations $$f_{\lambda} = f_{\lambda}^{(1)} \circ \ldots \circ f_{\lambda}^{(K)}$$ to produce a composite flow model that allows more expressive transformations to be learnt. Provided we can evaluate $$q_Z$$ and compute the determinant of the Jacobian of the transformation efficiently, we can take $q_{\lambda} = q_X$ to be the resulting density model. While the base density $q_Z$ is usually taken to be the standard normal, for importance-sampling based applications, it may be helpful to choose $q_Z$ to be heavy-tailed, e.g. using the Cauchy distribution or standard Student's-$t$ distribution with $\nu > 1$.
+
+In summary, flow-based models offer an attractive way to approximate the minimum-variance distribution with $q_{\lambda}$, by optimizing the parameters of the transformation $$f_{\lambda}$$ to minimize $$ \kl{q^*}{q_{\lambda}}$$. This method appears to have been first proposed by Müller et. al., 2018 [[2]](#2), who apply this to calculating path integrals in light transport.
 
 ## References
 
