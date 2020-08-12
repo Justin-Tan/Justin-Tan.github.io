@@ -92,11 +92,11 @@ $$\begin{equation}
     \argmin_q \mathbb{V}_q\left[\frac{f(\*x)p(\*x)}{q(\*x)}\right] = \argmin_q \E{q}{\left(\frac{f(\*x)p(\*x)}{q(\*x)}\right)^2}
 \end{equation}$$
 
-Minimizing this functional via calculus of variations (see the Appendix) w.r.t $q$ demonstrates that the choice with lowest variance is:
+Minimizing this functional via the variational principle (see the Appendix) w.r.t $q$ demonstrates that the choice with lowest variance is:
 
 $$ q^*(\*x) = \frac{\vert f(\*x) \vert p(\*x)}{\int_{\mathcal{X}} d\*y \, \vert f(\*y) \vert p(\*y)} $$
 
-If $$f(\*x) \geq 0$$, then the variance of the importance sampling estimator $$\mathbb{V}_{q^*}$$ goes to zero, so we get the correct answer for any number of terms, $N$. This isn't practically useful because $$\int_{\mathcal{X}} d\*x \, f(\*x) p(\*x)$$ is the integral we're interested in - if we could evaluate the normalization factor in $q^*$ we can solve our original problem. However it does suggest that we should search for proposal distributions $q$ which are proportional, or 'have the same shape' as $\vert f p \vert $, i.e. $q \approx \frac{1}{Z} \vert f p \vert$, as distributions are unique up to normalization. 
+This makes intuitive sense - we want to sample from 'important' regions where $$p$$ or $$ \vert f \vert $$ are large and make a significant contribution to the integral. So $$q$$ should also be correspondingly large at these points. If $$f(\*x) \geq 0$$, then the variance of the importance sampling estimator $$\mathbb{V}_{q^*}$$ goes to zero, so we get the correct answer for any number of terms, $N$. This isn't practically useful because $$\int_{\mathcal{X}} d\*x \, f(\*x) p(\*x)$$ is the integral we're interested in - if we could evaluate the normalization factor in $q^*$ we can solve our original problem. However it does suggest that we should search for proposal distributions $q$ which are proportional, or 'have the same shape' as $\vert f p \vert $, i.e. $q \approx \frac{1}{Z} \vert f p \vert$, as distributions are unique up to normalization. 
 
 So some informal desiderata for the proposal $$q(\*x)$$ are that:
 
@@ -168,3 +168,4 @@ Neural Importance Sampling.
 arXiv 1808.03856 (2018).
 
 ## Appendix: Minimum-Variance Proposal
+We can prove the form of the minimum variance proposal distribution through variational methods. The variance can be considered a functional of the proposal $$q$$, which is subject to the constraint $$ \int d\*x \; q(\*x) = 1 $$.
