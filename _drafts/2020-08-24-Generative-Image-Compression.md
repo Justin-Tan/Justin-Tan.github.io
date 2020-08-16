@@ -16,7 +16,7 @@ This post talks about learnable data compression using machine learning methods.
 
 ## 1. Lossy Compression
 
-Machine learning methods for lossy image compression encode an image $$\*x \in \mathcal{X} \subset \mathbb{R}^D$$, represented as a vector/matrix of pixel intensities, into a latent representation $$\*z = E_{\phi}(\*x)$$ via the _encoder_ $E_{\phi}: \mathbb{R}^D \rightarrow \mathbb{R}^C$. This latent representation is subsequently quantized, $$\*z \rightarrow \hat{\*z}$$, e.g. by rounding to the nearest integer. This reduces the amount of information required to transmit/store $$\*x$$, but introduces error into the representation. 
+Machine learning methods for lossy image compression encode an image $$\*x \in \mathcal{X} \subset \mathbb{R}^D$$, represented as a vector/matrix of pixel intensities, into a latent representation $$\*z = E_{\phi}(\*x)$$ via the _encoder_ $E_{\phi}: \mathbb{R}^D \rightarrow \mathbb{R}^C$. This latent representation is subsequently quantized, $$\hat{\*z} = Q(\*z)$$, e.g. by rounding to the nearest integer. This reduces the amount of information required to transmit/store $$\*x$$, but introduces error into the representation. 
 
 The discrete form $$\hat{\*z}$$ can be losslessly stored using entropy coding methods and transmitted as a sequence of bits. Here a parametric model of the discrete marginal distribution $$p_{\nu}: \mathbb{Z}^C \rightarrow [0,1]$$ is introduced that aims to model the true marginal distribution $$p^*(\hat{\*z}) = \int_{\mathcal{X}} d\*x \; p(\*x, \hat{\*z})$$. The expected code length (or bitrate) achievable is given by the cross-entropy between the true and parametric marginals:
 
@@ -31,7 +31,7 @@ $$ d: \mathcal{X} \times \mathcal{X}' \rightarrow \mathbb{R}^+. $$
 
 Where $$d(\*x, \*x')$$ measures the cost of representing input $$\*x$$ with its reconstruction $$\*x'$$. For images, the mean squared error is a popular distortion measure. There exists a tradeoff between the expected code length of the compressed representation and the distortion. A higher rate results in a lower distortion, and vice-versa. This tradeoff can be explicitly manifested in a scalar hyperparameter $\beta$, and the parameters $(\theta, \phi, \nu)$ of the encoder, decoder and marginal model, respectively, are optimized jointly through minimization of the rate-distortion objective:
 
-$$ \mathcal{L} = \E{p(\*x)}{d(\*x,\*x') + \lambda R} = \E{p(\*x)}{d(\*x,G_{\theta} \circ E_{\phi}(\*x)) + \beta R}.$$
+$$ \mathcal{L} = \E{p(\*x)}{d(\*x,\*x') + \beta R} = \E{p(\*x)}{d(\*x,G_{\theta} \circ Q \circ E_{\phi}(\*x)) + \beta R}.$$
 
 Naively applying gradient descent to this objective is problematic as the gradient w.r.t. $\phi$ will be zero almost everywhere due to quantization. As an alternative, one differentiable relaxation is to use additive random noise in lieu of hard quantization. Considering the single-dimensional case, the probability mass function from integer rounding is:
 
@@ -41,7 +41,7 @@ Where the weights
 
 $$w_n = \mathbb{P}\left(z \in \left(n-\frac{1}{2}, n+\frac{1}{2}\right)\right) = \int_{n-\frac{1}{2}}^{n+\frac{1}{2}} dz \; p_{\nu}^{\textrm{cont.}}(z) = p_{\nu}^{\textrm{cont.}}(n) * \mathcal{U}\left(-\frac{1}{2}, \frac{1}{2}\right)$$
 
-describe the probability mass at each quantization point $n \in \mathbb{Z}$. Using the fact that the density function of the sum of independent random variables is given by convolution of the respective densities, the quantized form is obtained by the additive uniform noise channel $\hat{z} \approx z + u, \; u \sim \mathcal{U}\left(-\frac{1}{2}, \frac{1}{2}\right)$. The resulting PDF matches the quantized PMF exactly at $n \in \mathbb{Z}$ and provides a continuous interpolation at intermediate values. For the multivariate case, assuming a fully-factored PMF $$p_{\nu}(\hat{\*z}) = \prod_i p_{\nu}(\hat{z}_i)$$, additive uniform noise drawn from the $(-1/2,1/2)^C$ hypercube is used in place of quantization:
+describe the probability mass at each quantization point $n \in \mathbb{Z}$. Using the fact that the density function of the sum of independent random variables is given by convolution of the respective densities, a continuous relaxation to the discrete distribution is obtained by passing $$z$$ through an additive unit-width uniform noise channel: $\hat{z} \approx z + u, \; u \sim \mathcal{U}\left(-\frac{1}{2}, \frac{1}{2}\right)$. The resulting PDF matches the quantized PMF exactly at $n \in \mathbb{Z}$ and provides a continuous interpolation at intermediate values. For the multivariate case, assuming a fully-factored PMF $$p_{\nu}(\hat{\*z}) = \prod_i p_{\nu}(\hat{z}_i)$$, additive uniform noise drawn from the $(-1/2,1/2)^C$ hypercube is used in place of quantization:
 
 $$\hat{\*z} \approx \*z + \*u, \quad \*u \sim \mathcal{U}\left(-\frac{1}{2},\frac{1}{2}\right)^C.$$
 
