@@ -13,7 +13,9 @@ Bruce Springsteen, hanging out with my neighbour's cat, soccer. Sometimes machin
 
 ## Projects
 ### [Learned Generative Compression:](https://github.com/Justin-Tan/high-fidelity-generative-compression)
-Ever tried to download an image and go "wow this is too big"? For the low, low memory cost of $$\sim$$ 700 MB, we can learn a (lossy) compression scheme for images of arbitrary size and resolution. This will convert images to bitstreams requiring around two orders of magnitude less memory while maintaining similar perceptual quality. The idea is to 'amortize' the memory required to store an image by training a neural model for learnable compression/decompression. This is similar to the transforms used in standard image codecs such as JPEG, except now the transforms are nonlinear and learned. 
+Ever tried to download an image and go "wow this is too big"? For the low memory cost of $$\sim$$ 700 MB (and around 8 GB of RAM), we can learn a (lossy) compression scheme for images of arbitrary size and resolution. This will convert images to bitstreams requiring around two orders of magnitude less memory while maintaining similar perceptual quality. The idea is to 'amortize' the memory required to store an image by training a neural model for learnable compression/decompression. This is similar to the transforms used in standard image codecs such as JPEG, except now the transforms are nonlinear and learnable. 
+
+The model is capable of yielding perceptually similar reconstructions to the input that tend to be more visually pleasing than traditional image codecs which operate at comparable or higher bitrates. 
 
 This project was based on two nice papers by Mentzer et. al. ([[1]](https://arxiv.org/abs/2006.09965), [[2]]((https://arxiv.org/abs/1811.12817))). 
 
