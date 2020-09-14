@@ -60,7 +60,6 @@ Another alternative is to just use the 'straight-through estimator', where the g
 
 In the much-anticipated second part of this series, we'll draw an interesting connection between data compression and variational inference.
 
-
 ## References
 
 <a id="1">[1]</a> 
