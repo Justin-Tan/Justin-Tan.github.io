@@ -11,12 +11,12 @@ excerpt_separator: <!--more-->
 
 This post is the first in a multi-part series about learnable data compression.<!--more--> This post was developed when porting the paper ["High-Fidelity Generative Image Compression" by Mentzer et. al.](https://hific.github.io/) [[1]](#1) to PyTorch - you can find the [resulting implementation on Github here](https://github.com/Justin-Tan/high-fidelity-generative-compression). The repository also includes general routines for lossless data compression which interface with PyTorch for all your compression needs.
 
-The bulk of the neural compression literature is focused on image/video compression - we have well-developed prior models that allow us to extract the most relevant features for compression from the original input space. for image-based data. However, the same concept applies to other types of data in principle. In this first part we'll discuss methods for lossy compression and an interesting connection to variational inference.
+The bulk of the neural compression literature is focused on image/video compression - we have well-developed prior models that allow us to extract the most relevant features for compression from the original input space. for image-based data. However, the same concept applies to other types of data, in principle. In this first part we'll discuss the rate-distortion objective used in transform coding and how to propagate gradients through the quantization operation for end-to-end learning.
 
 * Contents
 {:toc}
 
-## 1. Lossy Compression
+## Lossy Compression
 
 Machine learning methods for lossy image compression encode an image $$\*x \in \mathcal{X} \subset \mathbb{R}^D$$, represented as a matrix of pixel intensities, into a latent representation $$\*z = E_{\phi}(\*x)$$ via the _encoder_ $E_{\phi}: \mathbb{R}^D \rightarrow \mathbb{R}^C$. This latent representation is subsequently quantized, $$\hat{\*z} = \lfloor \*z \rceil$$, e.g. by rounding to the nearest integer. This reduces the amount of information required to transmit/store $$\*x$$, but introduces error into the representation.
 
@@ -37,12 +37,13 @@ Where $$d(\*x, \*x')$$ measures the cost of representing input $$\*x$$ with its 
 
 $$\begin{align}
 \mathcal{L}(\theta, \phi, \nu) &= \E{p(\*x)}{d(\*x,\*x') + \beta \cdot R(\hat{\*z})} \\
-&= \underbrace{\E{p(\*x)}{d\left(\*x,G_{\theta} \circ  \lfloor E_{\phi}(\*x) \rceil\right)}}_{Distortion} + \beta \cdot \underbrace{\E{p(\*x)}{\left( -\E{p^*}{\log_2 p_{\nu}(\lfloor E_{\phi}(\*x) \rceil \right)}}}_{Rate}.
+&= \underbrace{\E{p(\*x)}{d\left(\*x,G_{\theta} \circ  \lfloor E_{\phi}(\*x) \rceil\right)}}_{Distortion} + \beta \cdot \underbrace{\E{p(\*x)}{\left( -\E{p^*}{\log_2 p_{\nu}(\lfloor E_{\phi}(\*x) \rceil \right)}}}_{Rate} \\
+&= \textrm{Expected reconstruction mismatch} + \beta \cdot \left( \textrm{Expected bitstream length}\right)
 \end{align}$$
 
 The encoder and generator transforms are usually parameterized using convolutional networks, which may be able to achieve a more appropriate latent representation compared to the linear transforms used by traditional image codecs. The distribution parameters of the prior probability model are also typically defined by a convolutional/dense network - e.g. if the probability model over $$\hat{\*z}$$ is taken to be Gaussian, the mean and scale parameters of the distribution are defined by the output of a neural network, as in Ballé et. al. [[2]](#2). We'll discuss this more in the next post.
 
-### 1.1. Differentiable quantization proxy
+### Differentiable quantization proxy
 
 Naively applying gradient descent to this objective is problematic as the gradient w.r.t. $\phi$ and $\nu$ will be zero almost everywhere due to quantization. As an alternative, one differentiable relaxation is to use additive random noise in lieu of hard quantization. Considering the single-dimensional case, the probability mass function from integer rounding is:
 
