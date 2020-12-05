@@ -10,7 +10,7 @@ excerpt_separator: <!--more-->
 subtitle: Importance sampling can be used to reduce the variance of Monte Carlo integration, including computing expectations. We investigate the main idea and then examine an interesting application of normalizing flow models to this area.
 ---
 
-An interesting application of normalizing flows to Monte Carlo integration.<!--more--> The first two sections deal with basics about Monte Carlo and importance sampling, and the third section explores how flow models can be used to define a low-variance importance sampling density. 
+Here we study an interesting application of normalizing flows to Monte Carlo integration.<!--more--> The first two sections deal with basics about Monte Carlo and importance sampling, and the third section explores how flow models can be used to define a low-variance importance sampling density. 
 
 <!-- The last section looks at how some difficult integrals can be approximated in Jax. -->
 
