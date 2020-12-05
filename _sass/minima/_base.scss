@@ -310,7 +310,7 @@ table {
 
 .front-matter h4 {
   font-family: $base-font-family;
-  color: #bbb;
+  color: $grey-color-medium;// #bbb;
   // font-weight: bold;
 }
 
@@ -357,11 +357,25 @@ table {
   padding-top: 0.5em;
 }
 .article h2 {
+  color: $grey-color-medium;
+  // text-transform: uppercase;
+  // font-weight: bold;
   font-size: 26px;
   border-bottom: 1px solid #bbb;
   padding-bottom: 0.5rem;
   padding-top: 0.5em;
 }
+
+.article h3 {
+  color: $grey-color-medium;
+  // text-transform: uppercase;
+  font-weight: bold;
+  // font-size: 26px;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5em;
+}
+
+
 .article .figure {
   border-top: 1px solid hsla(0, 0%, 0%, 0.2);
   border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
@@ -371,7 +385,7 @@ table {
   padding-top: 15px;
   display: inline-block;
   font-size: 13px;
-  line-heigh: 1.2em;
+  line-height: 1.2em;
 }
 .article .figure .caption-label {
   font-weight: bold;
