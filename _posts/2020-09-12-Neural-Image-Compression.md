@@ -7,7 +7,7 @@ usemathjax: true
 readtime: true
 image: /assets/images/shell_web.jpg
 excerpt_separator: <!--more-->
-subtitle: Modern learnable data compression schemes use neural networks to define the transforms used in transform coding. We illustrate the basic idea behind lossy compression and look at one possible continuous relaxation to quantization required for entropy coding. 
+subtitle: Modern learnable data compression schemes use neural networks to define the transforms used in transform coding. We illustrate the basic idea behind learnable lossy compression and look at one possible continuous relaxation to quantization, required for entropy coding. 
 ---
 
 This post is the first in a hopefully multi-part series about learnable data compression.<!--more--> This post was developed when porting the paper ["High-Fidelity Generative Image Compression" by Mentzer et. al.](https://hific.github.io/) [[1]](#1) to PyTorch - you can find the [resulting implementation on Github here](https://github.com/Justin-Tan/high-fidelity-generative-compression). The repository also includes general routines for lossless data compression which interface with PyTorch for all your compression needs.

@@ -11,9 +11,7 @@ subtitle: Recently proposed latent variable models use quantities derived from i
 
 ---
 
-Applications of latent variable models to density estimation/approximate sampling, in Jax.<!--more-->
-
-We'll implement the recently proposed SUMO (Stochastically Unbiased Marginalization Objective) in Jax, highlighting how Jax differs from standard Autodiff frameworks in some major aspects. Section 1 concerns the derivation of the SUMO objective. Section 2 walks through the Jax implementation, while section 3 contains the obligatory toy problem. This post did turn out longer than expected, so you may want to take a breather between sections. If you are only interested in the practical part, skip to Section 2 or check out the [associated repository on Github](https://github.com/justin-tan/jax_sumo).
+Here we'll look at how latent-variable models can be manipulated to yield an unbiased estimator of the marginal log-likelihood.<!--more--> We'll implement the recently proposed SUMO (Stochastically Unbiased Marginalization Objective) in Jax, highlighting how Jax differs from standard Autodiff frameworks in some major aspects. Section 1 concerns the derivation of the SUMO objective. Section 2 walks through the Jax implementation, while section 3 contains the obligatory toy problem. This post did turn out longer than expected, so you may want to take a breather between sections. If you are only interested in the practical part, skip to Section 2 or check out the [associated repository on Github](https://github.com/justin-tan/jax_sumo).
 
 * Contents
 {:toc}

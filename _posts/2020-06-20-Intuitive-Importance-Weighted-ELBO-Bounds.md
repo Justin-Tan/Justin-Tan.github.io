@@ -11,7 +11,7 @@ excerpt_separator: <!--more-->
 subtitle: Multi-sample estimators of the marginal log-likelihood provide tigher bounds on $\log p(x)$ than the standard evidence lower bound. Here we sketch why this is, and walk through an implementation in Jax.
 ---
 
-Here we'll give a light sketch about why importance-weighted autoencoders provide a tighter bound on $\log p(x)$, then walk through a fast implementation in Jax.<!--more--> If you just want the Jax skip to Section 1.3.
+Here we'll give a light sketch about why importance-weighted autoencoders provide a tighter bound on $\log p(x)$, then walk through how Jax makes these kind of multi-sample estimators nice to implement.<!--more--> If you just want the Jax skip to Section 1.3.
 
 * Contents
 {:toc}

@@ -95,6 +95,7 @@ li {
  */
 h1, h2, h3, h4, h5, h6 {
   font-weight: $base-font-weight;
+  // border-bottom: 1px solid #bbb;
 }
 
 
@@ -107,7 +108,7 @@ a {
   text-decoration: none;
 
   &:visited {
-    color: darken($brand-color, 15%);
+    color: darken($brand-color, 1%);
   }
 
   &:hover {
@@ -295,4 +296,101 @@ table {
   color: rgba(0, 0, 0, 0.5);
   width: 100px;
   margin-bottom: -24px;
+}
+
+.clear {
+  clear: both;
+}
+
+.front-matter {
+  padding: 20px 0;
+  border-bottom: 1px solid #bbb;
+  margin-bottom: 42px;
+}
+
+.front-matter h4 {
+  font-family: $base-font-family;
+  color: #bbb;
+  // font-weight: bold;
+}
+
+.front-matter .bylines .byline {
+  margin-right: 20px;
+  float: left;
+}
+.front-matter .bylines .byline h3,
+.front-matter .bylines .byline p {
+  margin: 0;
+  font-family: -apple-system, Helvetica, arial, sans-serif;
+}
+.front-matter .bylines .byline h3 {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #556aaa;
+  // color: rgba(0, 0, 0, 0.5);
+}
+
+.front-matter .bylines .byline p {
+  line-height: 1.6em;
+  text-transform: uppercase;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.article {
+  // font-size: 15px;
+  // line-height: 1.6em;
+  // color: rgba(0, 0, 0, 0.8);
+  // margin-top: 42px;
+  margin-bottom: 42px;
+}
+.article blockquote {
+  margin: 0;
+  padding: 0 1em;
+  color: #777;
+  border-left: 0.25em solid #ddd;
+}
+.article h1 {
+  // border-bottom: 1px solid #bbb;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5em;
+}
+.article h2 {
+  font-size: 26px;
+  border-bottom: 1px solid #bbb;
+  padding-bottom: 0.5rem;
+  padding-top: 0.5em;
+}
+.article .figure {
+  border-top: 1px solid hsla(0, 0%, 0%, 0.2);
+  border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
+  padding: 20px 0;
+}
+.article .figure .caption {
+  padding-top: 15px;
+  display: inline-block;
+  font-size: 13px;
+  line-heigh: 1.2em;
+}
+.article .figure .caption-label {
+  font-weight: bold;
+}
+.article .footnote {
+  line-height: 0;
+}
+.article div.highlight {
+  border-top: 1px solid rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  font-size: 13px;
+  line-height: 1.3em;
+}
+.article ul {
+  padding: 0 15px;
+}
+.article hr {
+  border-bottom: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.7);
+  margin: 33px auto;
+  width: 70px;
 }

@@ -1,11 +1,9 @@
 ---
-layout: default
+layout: about
 title: About
 permalink: /about/
 ---
-
-## About
-
+# About
 This is a site that stores technical notes on material I find interesting, mainly on math and machine learning. By clearly explaining the things I know now here, future me wastes less time looking stuff up. Hopefully my mental stack will be of use or interest to you.
 
 ## Personal Interests
