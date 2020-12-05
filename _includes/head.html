@@ -1,4 +1,5 @@
 <head>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
       {%- seo -%}
@@ -13,7 +14,7 @@
     <title>{% if page.use-site-title %}{{ site.title }} {{ site.title-separator | default: '-' }} {{ site.description }}{% elsif page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}</title>
     
     {% if site.author %}
-    <meta name="author" content="{{ site.author }}">
+    <meta name="author" content="Justin Tan">
     {% endif %}
     
     {% if page.subtitle %}
@@ -25,6 +26,15 @@
     {% include google_analytics.html %}
     {% endif %}
   
+    <meta name='keywords' content='
+    machine learning,
+    statistical machine learning,
+    bayesian inference,
+    cats,
+    deep learning,
+    computer science
+    '>
+
     <!-- Favicons -->
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicons//favicon-32x32.png">

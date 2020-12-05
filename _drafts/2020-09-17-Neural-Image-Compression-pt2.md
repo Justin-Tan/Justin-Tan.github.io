@@ -1,15 +1,16 @@
 ---
 layout: post
 title: "Neural Image Compression, Part II"
-date: 2020-09-12
-categories: machine-learning, image-compression, pytorch
+date: 2020-11-12
+categories: machine-learning, data-compression, pytorch, variational-inference
 usemathjax: true
 readtime: true
 image: /assets/images/shell_web.jpg
+subtitle: Both lossy and lossless data compression may be cast in the language of variational inference. We'll study this analogy and show that it allows us to derive useful learnable compression schemes that can improve upon solely autoencoder-based methods. 
 excerpt_separator: <!--more-->
 ---
 
-This post draws a connection between variational inference and data compression. <!--more-->
+This is the second post in an officially multi-part series about learnable data compression, and investigates how data compression can be cast in the language of variational inference. <!--more-->
 
 * Contents
 {:toc}

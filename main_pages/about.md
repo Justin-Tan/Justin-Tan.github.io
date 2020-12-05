@@ -6,7 +6,7 @@ permalink: /about/
 
 ## About
 
-This is a site that stores extended notes on material I find interesting, mainly on math and machine learning. By clearly explaining the things I know now here, future me wastes less time looking stuff up. Hopefully these posts will be of use or interest to you.
+This is a site that stores technical notes on material I find interesting, mainly on math and machine learning. By clearly explaining the things I know now here, future me wastes less time looking stuff up. Hopefully my mental stack will be of use or interest to you.
 
 ## Personal Interests
 
@@ -14,7 +14,7 @@ Bruce Springsteen, hanging out with my neighbour's cat, soccer. Sometimes machin
 
 ![Image](/assets/images/shell_web.jpg)
 
-## Projects
+<!-- ## Projects
 
 ### Neural Image Compression
 
@@ -26,7 +26,7 @@ This project defines a learnable compression scheme for images of arbitrary size
 
 The model is capable of yielding perceptually similar reconstructions to the input that tend to be more visually pleasing than traditional image codecs which operate at comparable or higher bitrates.
 
-This project was based on two nice papers by Mentzer et. al. ([[1]](https://arxiv.org/abs/2006.09965), [[2]]((https://arxiv.org/abs/1811.12817))). 
+This project was based on two interesting papers by Mentzer et. al. ([[1]](https://arxiv.org/abs/2006.09965), [[2]]((https://arxiv.org/abs/1811.12817))). -->
 
 ## Teaching
 

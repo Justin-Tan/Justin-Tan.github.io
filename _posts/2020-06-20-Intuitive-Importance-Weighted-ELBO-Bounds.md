@@ -8,6 +8,7 @@ usemathjax: true
 readtime: True
 image: /assets/images/shell_web.jpg
 excerpt_separator: <!--more-->
+subtitle: Multi-sample estimators of the marginal log-likelihood provide tigher bounds on $\log p(x)$ than the standard evidence lower bound. Here we sketch why this is, and walk through an implementation in Jax.
 ---
 
 Here we'll give a light sketch about why importance-weighted autoencoders provide a tighter bound on $\log p(x)$, then walk through a fast implementation in Jax.<!--more--> If you just want the Jax skip to Section 1.3.
@@ -49,7 +50,7 @@ So the 'slackness' in the bound (approximately) scales with the variance of $R$,
 
 Note to make use of this expansion, we should have that $R$ is concentrated near $p(x)$ in the sense that the Taylor series for $\log\left(1 + \frac{R-p(x)}{p(x)}\right)$ converges.
 
-The scaling of bound tightness with variance suggests we should look for a function of $R$ with the same mean but lower variance, one easy possibility is just the sample mean $R_K = \frac{1}{K}\sum_{k=1}^K R_k$. Then, as each $R_k$ has identical mean $p(x)$, we still have $\log p(x) \geq \E{}{\log R_K}$, but now this gives a tighter bound by a factor of $1/K$, with the caveat that $\vert \frac{R-p(x)}{p(x)} \vert < 1$. So using more importance samples $K$ helps us pump those rookie numbers up.
+The scaling of bound tightness with variance suggests we should look for a function of $R$ with the same mean but lower variance, one easy possibility is just the sample mean $R_K = \frac{1}{K}\sum_{k=1}^K R_k$. Then, as each $R_k$ has identical mean $p(x)$, we still have $\log p(x) \geq \E{}{\log R_K}$, but now this gives a tighter bound by a factor of $1/K$, with the caveat that $\vert \frac{R-p(x)}{p(x)} \vert < 1$. So using more particles $K$ helps us pump those rookie numbers up.
 
 ### 1.2. The Importance-Weighted ELBO
 We can connect this back to variational inference by letting $R$ have the following form:

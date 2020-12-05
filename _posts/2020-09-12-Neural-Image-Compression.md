@@ -7,9 +7,10 @@ usemathjax: true
 readtime: true
 image: /assets/images/shell_web.jpg
 excerpt_separator: <!--more-->
+subtitle: Modern learnable data compression schemes use neural networks to define the transforms used in transform coding. We illustrate the basic idea behind lossy compression and look at one possible continuous relaxation to quantization required for entropy coding. 
 ---
 
-This post is the first in a multi-part series about learnable data compression.<!--more--> This post was developed when porting the paper ["High-Fidelity Generative Image Compression" by Mentzer et. al.](https://hific.github.io/) [[1]](#1) to PyTorch - you can find the [resulting implementation on Github here](https://github.com/Justin-Tan/high-fidelity-generative-compression). The repository also includes general routines for lossless data compression which interface with PyTorch for all your compression needs.
+This post is the first in a hopefully multi-part series about learnable data compression.<!--more--> This post was developed when porting the paper ["High-Fidelity Generative Image Compression" by Mentzer et. al.](https://hific.github.io/) [[1]](#1) to PyTorch - you can find the [resulting implementation on Github here](https://github.com/Justin-Tan/high-fidelity-generative-compression). The repository also includes general routines for lossless data compression which interface with PyTorch for all your compression needs.
 
 The bulk of the neural compression literature is focused on image/video compression - we have well-developed prior models that allow us to extract the most relevant features for compression from the original input space. for image-based data. However, the same concept applies to other types of data, in principle. In this first part we'll discuss the rate-distortion objective used in transform coding and how to propagate gradients through the quantization operation for end-to-end learning.
 
@@ -41,9 +42,9 @@ $$\begin{align}
 &= \textrm{Expected reconstruction mismatch} + \beta \cdot \left( \textrm{Expected bitstream length}\right)
 \end{align}$$
 
-The encoder and generator transforms are usually parameterized using convolutional networks, which may be able to achieve a more appropriate latent representation compared to the linear transforms used by traditional image codecs. The distribution parameters of the prior probability model are also typically defined by a convolutional/dense network - e.g. if the probability model over $$\hat{\*z}$$ is taken to be Gaussian, the mean and scale parameters of the distribution are defined by the output of a neural network, as in Ballé et. al. [[2]](#2). We'll discuss this more in the next post.
+For image-based data, the encoder and generator transforms are usually parameterized using convolutional networks, which may be able to achieve a more appropriate latent representation compared to the linear transforms used by traditional image codecs. The distribution parameters of the prior probability model are also typically defined by a convolutional/dense network - e.g. if the probability model over $$\hat{\*z}$$ is taken to be Gaussian, the mean and scale parameters of the distribution are defined by the output of a neural network, as in Ballé et. al. [[2]](#2). We'll discuss this more in the next post.
 
-### Differentiable quantization proxy
+## Differentiable quantization proxy
 
 Naively applying gradient descent to this objective is problematic as the gradient w.r.t. $\phi$ and $\nu$ will be zero almost everywhere due to quantization. As an alternative, one differentiable relaxation is to use additive random noise in lieu of hard quantization. Considering the single-dimensional case, the probability mass function from integer rounding is:
 
@@ -59,7 +60,7 @@ $$\hat{\*z} \approx \*z + \*u, \quad \*u \sim \mathcal{U}\left(-\frac{1}{2},\fra
 
 Another alternative is to just use the 'straight-through estimator', where the gradients of the rounding operation are defined to be the identity: $$ \nabla \lfloor \*z \rceil \triangleq I$$ - in effect ignoring quantization during the backward pass. It appears that modern approaches, including the HiFIC paper [[1]](#1), use a mixed approach where the uniform noise channel is used to learn the prior probability model, but the straight-through estimator is used when $$\lfloor \*z \rceil $$ is passed as input to the generator. In either case, the end result is that the (approximated) gradients can flow freely backward, and the rate-distortion Lagrangian can be optimized using stochastic gradient-based methods.
 
-In the much-anticipated second part of this series, we'll draw an interesting connection between data compression and variational inference.
+In the (hypothetical) second part of this series, we'll draw an interesting connection between data compression and variational inference.
 
 ## References
 

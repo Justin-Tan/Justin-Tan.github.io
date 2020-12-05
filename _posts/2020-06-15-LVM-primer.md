@@ -6,7 +6,7 @@ categories: machine-learning, latent-variables
 usemathjax: true
 readtime: True
 image: /assets/images/shell_web1.png
-excerpt_separator: <!--more-->
+subtitle: This post serves as an easy-to-update personal encyclopedia about latent variable models. We start with a straightforward derivation of the evidence lower bound and then examines modern techniques used in variational inference.
 ---
 
 This post serves as an easy-to-update personal encyclopedia about latent variable models. Starts with a straightforward derivation of the evidence lower bound and then examines modern techniques used in variational inference.<!--more-->  

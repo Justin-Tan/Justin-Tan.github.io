@@ -261,3 +261,38 @@ table {
 // border: 2px solid $code-border-color;
 // border-radius: 0.5px;
 // background-color: $code-background-color;
+
+#posts .post-date {
+  text-transform: uppercase;
+  // color: rgba(0, 0, 0, 0.7);
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+#posts .post-title {
+  display: inline-block;
+  margin-bottom: 0;
+}
+#posts .post-title a {
+  // font-size: 18px;
+  color: #998;
+  text-decoration: none;
+}
+
+#posts .post-title a:hover {
+  text-decoration: underline;
+}
+#posts .post-subtitle {
+  font-size: 16px;
+  margin-top: 2px;
+  margin-bottom: 5px;
+  line-height: 1.5em;
+}
+#posts .year {
+  font-size: 18px;
+  position: relative;
+  right: 100px;
+  color: rgba(0, 0, 0, 0.5);
+  width: 100px;
+  margin-bottom: -24px;
+}

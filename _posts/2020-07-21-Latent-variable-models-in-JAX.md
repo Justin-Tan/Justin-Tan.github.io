@@ -1,13 +1,14 @@
 ---
 layout: post
 title: "Latent Variable Models in Jax"
-subtitle: "For density estimation/sampling."
 date: 2020-07-21
 categories: machine-learning, latent-variables, jax
 usemathjax: true
 readtime: True
 image: /assets/images/shell_web.jpg
 excerpt_separator: <!--more-->
+subtitle: Recently proposed latent variable models use quantities derived from importance-sampling bounds on the marginal log-likelihood to construct an unbiased estimator of $\log p(x)$. We investigate one such model, and use this to attempt a pedagogical introduction to Jax. 
+
 ---
 
 Applications of latent variable models to density estimation/approximate sampling, in Jax.<!--more-->
