@@ -58,7 +58,7 @@ describe the probability mass at each quantization point $n \in \mathbb{Z}$. Usi
 
 $$\hat{\*z} \approx \*z + \*u, \quad \*u \sim \mathcal{U}\left(-\frac{1}{2},\frac{1}{2}\right)^C.$$
 
-Another alternative is to just use the 'straight-through estimator', where the gradients of the rounding operation are defined to be the identity: $$ \nabla \lfloor \*z \rceil \triangleq I$$ - in effect ignoring quantization during the backward pass. It appears that modern approaches, including the HiFIC paper [[1]](#1), use a mixed approach where the uniform noise channel is used to learn the prior probability model, but the straight-through estimator is used when $$\lfloor \*z \rceil $$ is passed as input to the generator. In either case, the end result is that the (approximated) gradients can flow freely backward, and the rate-distortion Lagrangian can be optimized using stochastic gradient-based methods.
+Another alternative is to just use the 'straight-through estimator', where the gradients of the rounding operation are defined to be the identity: $$ \nabla \lfloor \*z \rceil \triangleq I$$ - in effect ignoring quantization during the backward pass. It appears that modern approaches, including the HiFIC paper [[1]](#1), use an ad-hoc mixed approach where the uniform noise channel is used to learn the prior probability model, but the straight-through estimator is used when $$\lfloor \*z \rceil $$ is passed as input to the generator. In either case, the end result is that the (approximated) gradients can flow freely backward, and the rate-distortion Lagrangian can be optimized using stochastic gradient-based methods.
 
 In the (hypothetical) second part of this series, we'll draw an interesting connection between data compression and variational inference.
 

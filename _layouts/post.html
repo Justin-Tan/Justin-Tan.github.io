@@ -25,12 +25,12 @@
     
     <div class="wrapper article">
       {{ content }}
-    </div>
     
     {% if site.disqus.shortname %}
       {% include disqus_comments.html %}
     {% endif %}
-    
+  </div>
+
 
     {%- include footer.html -%}
   </body>
