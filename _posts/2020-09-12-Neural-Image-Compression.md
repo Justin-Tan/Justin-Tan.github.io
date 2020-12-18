@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Neural Image Compression, Part I"
+title: "Neural Image Compression I"
 date: 2020-09-12
 categories: machine-learning, image-compression, pytorch
 usemathjax: true
@@ -19,9 +19,9 @@ The bulk of the neural compression literature is focused on image/video compress
 
 ## Lossy Compression
 
-Machine learning methods for lossy image compression encode an image $$\*x \in \mathcal{X} \subset \mathbb{R}^D$$, represented as a matrix of pixel intensities, into a latent representation $$\*z = E_{\phi}(\*x)$$ via the _encoder_ $E_{\phi}: \mathbb{R}^D \rightarrow \mathbb{R}^C$. This latent representation is subsequently quantized, $$\hat{\*z} = \lfloor \*z \rceil$$, e.g. by rounding to the nearest integer. This reduces the amount of information required to transmit/store $$\*x$$, but introduces error into the representation.
+Machine learning methods for lossy image compression encode an image $$\*x \in \mathcal{X} \subset \mathbb{R}^D$$, represented as a matrix of pixel intensities, into a latent representation $$\*z = E_{\phi}(\*x)$$ via the _encoder_ $E_{\phi}: \mathbb{R}^D \rightarrow \mathbb{R}^C$ (typically $C \ll D$). This latent representation is subsequently quantized, $$\hat{\*z} = \lfloor \*z \rceil$$, e.g. by rounding to the nearest integer. This reduces the amount of information required to transmit/store $$\*x$$, but introduces error into the representation.
 
-The discrete form $$\hat{\*z}$$ can be losslessly compressed using standard entropy coding methods (e.g. Huffman, arithmetic, rANS) and transmitted as a sequence of bits. Here a parametric model of the discrete marginal distribution $$p_{\nu}: \mathbb{Z}^C \rightarrow [0,1]$$ is introduced that aims to model the true marginal distribution $$p^*(\hat{\*z}) = \int_{\mathcal{X}} d\*x \; p(\*x, \hat{\*z})$$. The expected code length (or bitrate) achievable is given by the cross-entropy between the true and parametric marginals:
+The discrete form $$\hat{\*z}$$ can be losslessly compressed using standard entropy coding methods (e.g. Huffman, arithmetic, rANS) and transmitted as a sequence of bits. Here a parametric model of the discrete marginal distribution $$p_{\nu}: \mathbb{Z}^C \rightarrow [0,1]$$ is introduced that aims to model the true marginal distribution $$p^*(\hat{\*z}) = \int_{\mathcal{X}} d\*x \; p(\*x) \delta\left( \hat{\*z} - \lfloor E_{\phi}(\*x) \rceil\right)$$. The expected code length (or bitrate) achievable is given by the cross-entropy between the true and parametric marginals:
 
 $$\begin{align}
 R(\hat{\*z}) &= -\E{p^*}{\log_2 p_{\nu}(\hat{\*z})} \\

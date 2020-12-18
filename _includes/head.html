@@ -51,6 +51,12 @@
         "AssistiveMML.js",
         "a11y/accessibility-menu.js"
       ],
+        TeX: {
+          equationNumbers: { autoNumber: "AMS" },
+          tagSide: "right"
+
+        },
+
         tex2jax: {
           skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
           inlineMath: [ ['$','$'], ["\\(","\\)"] ],
@@ -59,8 +65,17 @@
         }
   
       });
+
     </script>
-    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script> 
+
+    <!-- NORMAL FONT-->
+    <!-- <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>  -->
+
+    <!-- WEIRD FONT-->
+
+    <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
 
     {% if page.usemathjax %}
     <div style="display:none">
@@ -74,7 +89,8 @@
       \DeclareMathOperator*{\argmin}{argmin}
       \newcommand{\elbo}{\textsc{elbo}}
       \newcommand\testmacro[2]{\mathbf{F\alpha}(#1)^{#2}}
-      \newcommand{\kl}[2]{D_{\mathrm{KL}}\left(#1 \Vert #2\right)}
+      <!-- \newcommand{\kl}[2]{D_{\mathrm{KL}}\left(#1 \Vert #2\right)} -->
+      \newcommand{\kl}[2]{\textsf{KL}\left(#1 \Vert #2\right)}
       \newcommand{\E}[2]{\mathbb{E}_{#1}\left[#2\right]}
       \DeclareMathOperator*{\argmax}{argmax}
       $

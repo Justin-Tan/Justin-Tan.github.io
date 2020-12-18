@@ -55,7 +55,7 @@ $$\begin{align}
     &= \log p(x) - \mathscr{F}(x; \lambda) 
 \end{align}$$
 
-Where the variational free energy $\mathscr{F}$ is defined as:
+Where the (negative) variational free energy $\mathscr{F}$ is defined as:
 
 \begin{equation}
     \label{eq:elbo_def}
