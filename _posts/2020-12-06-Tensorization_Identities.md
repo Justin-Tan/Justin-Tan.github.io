@@ -1,6 +1,7 @@
 ---
 layout: post
 title: "Concentration Inequalities I: Tensorization Identities"
+type: note
 date: 2020-12-04
 categories: machine-learning, information-theory
 usemathjax: true

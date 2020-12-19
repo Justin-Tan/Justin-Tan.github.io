@@ -2,6 +2,7 @@
 layout: post
 title: "Neural Image Compression I"
 date: 2020-09-12
+type: note
 categories: machine-learning, image-compression, pytorch
 usemathjax: true
 readtime: true

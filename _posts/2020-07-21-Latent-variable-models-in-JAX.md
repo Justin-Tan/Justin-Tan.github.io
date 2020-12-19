@@ -2,6 +2,7 @@
 layout: post
 title: "Latent Variable Models in Jax"
 date: 2020-07-21
+type: exposition
 categories: machine-learning, latent-variables, jax
 usemathjax: true
 readtime: True

@@ -2,6 +2,7 @@
 layout: post
 title:  "Latent Variable Model Primer"
 date:   2020-06-15 16:01:44 +1000
+type: note
 categories: machine-learning, latent-variables
 usemathjax: true
 readtime: True

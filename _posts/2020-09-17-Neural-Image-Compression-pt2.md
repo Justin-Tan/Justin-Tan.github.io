@@ -2,6 +2,7 @@
 layout: post
 title: "Neural Image Compression II"
 date: 2020-11-12
+type: note
 categories: machine-learning, data-compression, variational-inference
 usemathjax: true
 readtime: true

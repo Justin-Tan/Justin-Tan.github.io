@@ -1,14 +1,14 @@
 ---
 layout: post
 title: "Intuitive IWAE Bounds + Implementation in Jax"
-subtitle: "Pumping those rookie numbers up."
 date: 2020-06-20
+type: exposition
 categories: machine-learning, latent-variables, jax
 usemathjax: true
 readtime: True
 image: /assets/images/shell_web.jpg
 excerpt_separator: <!--more-->
-subtitle: Multi-sample estimators of the marginal log-likelihood provide tigher bounds on $\log p(x)$ than the standard evidence lower bound. Here we sketch why this is, and walk through an implementation in Jax.
+subtitle: Multi-sample estimators of the marginal log-likelihood provide tighter bounds on $\log p(x)$ than the standard evidence lower bound. Here we sketch why this is, and walk through an implementation in Jax.
 ---
 
 Here we'll give a light sketch about why importance-weighted autoencoders provide a tighter bound on $\log p(x)$, then walk through how Jax makes these kind of multi-sample estimators nice to implement.<!--more--> If you just want the Jax skip to Section 1.3.

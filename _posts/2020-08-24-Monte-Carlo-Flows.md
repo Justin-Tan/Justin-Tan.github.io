@@ -2,6 +2,7 @@
 layout: post
 title: "Monte Carlo Methods and Normalizing Flows"
 date: 2020-08-04
+type: note
 categories: machine-learning, normalizing-flows, monte-carlo, jax
 usemathjax: true
 readtime: True
