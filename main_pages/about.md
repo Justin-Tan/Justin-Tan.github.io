@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 # About
-This is a public subset of technical notes and half-baked thoughts on material I find interesting, mainly on math and machine learning. The rest get sent to `/dev/null`. By clearly explaining the things I know now here, future me wastes less time looking stuff up. Hopefully my strangely arranged personal encyclopedia will be of use or interest to you.
+This is a public set of notes and half-baked thoughts on material I find interesting, mainly on math and machine learning. By clearly explaining the things I know now here, future me wastes less time looking stuff up. Hopefully my strangely arranged personal encyclopedia will be of use or interest to you.
 
 ## Personal Interests
 
