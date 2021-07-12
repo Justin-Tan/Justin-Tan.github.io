@@ -134,13 +134,22 @@ A great statement is distinctive and shows awareness, curiosity, and forward thi
 
 ### Previous Research
 
-* My background is in experimental high-energy physics, looking at ways to improve the sensitivity of particle accelerator experiments to hypothetical signatures of new physics. My Master's degree was concerned with developing methods to detect a very rare class of decays at particle colliders, the technical term for these are penguin decays. During my analysis I became more interested in a more general problem which is common to many experimental analyses in particle physics. This problem was that naïvely applying supervised machine learning methods in these analyses can introduce a large bias into the distribution of physically important observables, such as the particle mass, and this can have a negative effect on the final uncertainty of the measurements we'd like to make.
+* My background is in collider physics, looking at ways to improve the sensitivity of particle accelerator experiments to hypothetical signatures of new physics. My Master's degree was concerned with developing methods to detect a very rare class of decays at particle colliders, the technical term for these are penguin decays.
+* During my analysis I became more interested in a more general problem which is common to many experimental analyses in particle physics - for rare decays, we need background rejection methods to reliably distinguish signal from background events at a reasonably high rate.
+* When measuring branching fractions and related observables - typically done via extended maximum likelihood fit to the distribution of some fit variable, usually invariant mass of a resonance.
+* If background suppression methods allowed to condition on particle mass - distorts the distribution of the fit variable; makes fit and therefore measurement more challenging.
+* I was working on finding a transformation of the original data (4 momenta of final state reconstructed particles) such that you can use this new form safely do all the regular tasks you would do in an analysis without introducing bias into the spectrum of physically important observables.
+* Parameterized the transformation as a function; and learn parameters through an optimization process. The objective to be optimized encouraged the individual dimensions of the representation to be approximately statistically independent.
+* Once this is achieved, we can associate or identify certain dimensions with the invariant mass - now you've learnt a presentation which partitions the raw input into independent concepts, and we can drop concepts from this representation by removing the corresponding dimensions.
+* What results after the transformation is a representation of the original data that has information about the invariant mass discarded. Subsequent tasks can use this representation safely without being influenced by the physical observables we would like to preserve, eliminating a potential source of significant systematic uncertainty in analyses. 
+* This is closely related to the problem of algorithmic fairness, in both cases you would like predictions to be agnostic to certain characteristics of your input data.
+* This work was originally part of a PhD project concerned with precision measurements of rare decays at the Belle II experiment in Tsukaba, Japan. About one year into the program, I realized I was more motivated by the challenging machine learning aspect of the project and transitioned to a Master's by research degree, with the objective of undertaking graduate study more oriented around machine learning.
 
-* I was working on finding representations of the original data such that you can do all the regular tasks you would do in an analysis without introducing bias into the spectrum of physically important observables. My work framed this in terms of identifying an representation that is approximately invariant with respect to certain physical observables related to the original data. We showed that you can use the concept of disentangled representations in variational autoencoders, where the dimensions of the latent representation are enforced to be approximately independent - you can use this concept to isolate the influence of the observables into a subspace of the learned latent representation of the generative model. From this, you can obtain a representation which is safe to use by removing the corresponding subspace in this latent representation.
+<!-- * My work framed this in terms of identifying an representation that is approximately invariant with respect to certain physical observables related to the original data. We showed that you can use the concept of disentangled representations in variational autoencoders, where the dimensions of the latent representation are enforced to be approximately independent - you can use this concept to isolate the influence of the observables into a subspace of the learned latent representation of the generative model. From this, you can obtain a representation which is safe to use by removing the corresponding subspace in this latent representation.
 
 * This allows downstream tasks to safely access a relevant 'subset' of the observed information without being influenced by the physical observables we would like to preserve, eliminating a potential source of significant systematic uncertainty in analyses. This is closely related to the problem of algorithmic fairness, in both cases you would like predictions to be agnostic to certain characteristics of your input data.
 
-* This work was originally part of a PhD project concerned with precision measurements of rare decays at the Belle II experiment in Tsukaba, Japan. About one year into the program, I realized I was more motivated by the challenging machine learning aspect of the project and transitioned to a Master's by research degree, with the objective of undertaking graduate study more oriented around machine learning.
+* This work was originally part of a PhD project concerned with precision measurements of rare decays at the Belle II experiment in Tsukaba, Japan. About one year into the program, I realized I was more motivated by the challenging machine learning aspect of the project and transitioned to a Master's by research degree, with the objective of undertaking graduate study more oriented around machine learning. -->
 
 ### Current Research Interests
 
@@ -164,6 +173,11 @@ A great statement is distinctive and shows awareness, curiosity, and forward thi
 * I don't exactly regret the time I spent there, because I learned a lot there, about communication and how to do research, and it oriented me towards this very interesting research direction.
 * I know for a fact I'm very self-motivated to continue in this field and along this path, it's been about 3 years since I first started getting interested in machine learning.
 * I'm also acutely aware that I need to finish what I start if I get a second chance at things - because I'm not getting any younger, if nothing else.
+
+## Questions
+
+* Does your group work with the computer science department at Cambridge regarding these reconstruction algorithms? I know there's a new program at the Cambridge computer science department working on collaborations with the physical sciences.
+* Can you give details on what groups at Cambridge are doing in terms of developing reconstruction methods at neutrino detectors?
 
 # References
 

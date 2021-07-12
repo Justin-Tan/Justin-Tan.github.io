@@ -26,6 +26,17 @@ The model is capable of yielding perceptually similar reconstructions to the inp
 
 This project was based on two interesting papers by Mentzer et. al. ([[1]](https://arxiv.org/abs/2006.09965), [[2]]((https://arxiv.org/abs/1811.12817))). -->
 
+## Miscellanea
+
+### Transcriptions
+
+Partial piano transcriptions of notable songs recorded live.
+
+* Thunder Road (opening, draft) - West Hollywood, 1975. The first track on Springsteen's famed Live 1975-85 album.
+* [Incident on 57th Street (opening, draft)](/assets/scores/incident.pdf) - Main Point, 1975.
+* Piano Man (bridge, draft) - Long Island, 1982.
+
+
 ## Teaching
 
 I've been a teaching assistant for several graduate/undergraduate courses in the Computer Science department at the University of Melbourne.
