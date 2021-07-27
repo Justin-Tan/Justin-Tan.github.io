@@ -4,15 +4,17 @@ title: About
 permalink: /about/
 ---
 # About
-This is a public set of notes and half-baked thoughts on material I find interesting, mainly on math and machine learning. By clearly explaining the things I know now here, future me wastes less time looking stuff up. Hopefully my strangely arranged personal encyclopedia will be of use or interest to you.
+This is a public set of notes and half-baked thoughts on material I find interesting, mainly on math/machine learning. By clearly explaining the things I know now here, future me wastes less time looking stuff up.
+
+<!-- To get more biographical, I am a first-year PhD candidate in the computer science department at the University of Cambridge, supervised by Dr. Challenger Mishra. In a former life I was an experimental physicist working on the Belle II experiment. I currently work on geometric ML methods applied to theoretical physics. -->
 
 ## Personal Interests
 
-Bruce Springsteen, hanging out with my neighbour's cat, soccer. Sometimes machine learning.
+Bruce Springsteen, hanging out with my neighbour's cat, soccer.
 
 ![Image](/assets/images/shell_web.jpg)
 
-<!-- ## Projects
+<!-- ## Projectsy
 
 ### Neural Image Compression
 
@@ -39,9 +41,10 @@ Partial piano transcriptions of notable songs recorded live.
 
 ## Teaching
 
-I've been a teaching assistant for several graduate/undergraduate courses in the Computer Science department at the University of Melbourne.
+I've been a teaching assistant for several graduate/undergraduate courses in the computer science department at the University of Melbourne.
 
-|Head TA,<br>[Statistical Machine Learning](https://handbook.unimelb.edu.au/subjects/comp90051) (COMP90051) | Spring 2019, Fall 2020 |
-|TA,<br>[AI Planning for Autonomy](https://handbook.unimelb.edu.au/subjects/comp90054) (COMP90054) | Spring 2018, 2019 |
-|TA,<br>[Artificial Intelligence](https://handbook.unimelb.edu.au/subjects/comp30024) (COMP30024) | Fall 2019, 2020 |
-|TA,<br>[Machine Learning](https://handbook.unimelb.edu.au/subjects/comp30027) (COMP30027) | Fall 2020 |
+|Head TA / TA,<br>[Statistical Machine Learning](https://handbook.unimelb.edu.au/subjects/comp90051) (COMP90051) | Spring 19, 20, 21 / Fall 20, 21 |
+|Head TA,<br>[Computer Vision](https://handbook.unimelb.edu.au/subjects/comp90086) (COMP90086) | Spring 21 |
+|TA,<br>[AI Planning for Autonomy](https://handbook.unimelb.edu.au/subjects/comp90054) (COMP90054) | Spring 18, 19 |
+|TA,<br>[Artificial Intelligence](https://handbook.unimelb.edu.au/subjects/comp30024) (COMP30024) | Fall 19, 20, 21 |
+|TA,<br>[Machine Learning](https://handbook.unimelb.edu.au/subjects/comp30027) (COMP30027) | Fall 20, 21 |
