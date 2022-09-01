@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "Symmetries"
-date: 2021-01-07
+date: 2020-12-27
 categories: machine-learning, symmetries
 usemathjax: true
 readtime: true

@@ -3,16 +3,18 @@ layout: default
 title: Posts
 permalink: /posts/
 ---
+
+
 <h1>{{ page.title }}</h1>
 <div id='posts' class='section'>
     {% for post in site.posts %}
-        <!-- {% assign currentdate = post.date | date: "%Y" %}
+        {% assign currentdate = post.date | date: "%Y" %}
         {% if currentdate != date %}
-            {% unless forloop.first %}</ul>{% endunless %}
-            <h1 id="y{{post.date | date: "%Y"}}">{{ currentdate }}</h1>
+            {% unless forloop.first %}<br> </ul>{% endunless %}
+            <p class='post-date-head' id="y{{post.date | date: "%Y"}}">{{ currentdate }}</p>
             <ul>
             {% assign date = currentdate %}
-        {% endif %} -->
+        {% endif %}
     <div class='post-row'>
         <p class='post-title'>
             <a href="{{ post.url }}">
@@ -27,4 +29,5 @@ permalink: /posts/
         {{ post.subtitle }}
     </p>
     {% endfor %}
-</div>
+<!-- </div> -->
+

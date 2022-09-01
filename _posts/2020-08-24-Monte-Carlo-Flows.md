@@ -168,6 +168,3 @@ Springer (2004).
 Müller, Thomas et. al.
 Neural Importance Sampling.
 arXiv 1808.03856 (2018).
-
-## Appendix: Minimum-Variance Proposal
-We can prove the form of the minimum variance proposal distribution through variational methods. The variance can be considered a functional of the proposal $$q$$, which is subject to the constraint $$ \int d\*x \; q(\*x) = 1 $$.
