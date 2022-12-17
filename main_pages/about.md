@@ -8,8 +8,6 @@ This is a public set of notes and half-baked thoughts on material I find interes
 
 In a former life I was an experimental flavour physicist working on the Belle II experiment, but now do more abstract physics.
 
-<!-- To get more biographical, I am a first-year PhD candidate in the computer science department at the University of Cambridge, supervised by Dr. Challenger Mishra. In a former life I was an experimental physicist working on the Belle II experiment. I currently work on geometric ML methods applied to theoretical physics. -->
-
 ## Personal Interests
 
 Bruce Springsteen, hanging out with my neighbour's cat, football.
@@ -18,19 +16,19 @@ Bruce Springsteen, hanging out with my neighbour's cat, football.
 
 ## Miscellanea
 
-### Transcriptions
+<!-- ### Transcriptions -->
 
-Partial piano transcriptions of notable songs recorded live.
+<!-- Partial piano transcriptions of notable songs recorded live.
 
 * Thunder Road (opening, draft) - West Hollywood, 1975. The first track on Springsteen's famed Live 1975-85 album.
 * [Incident on 57th Street (opening, draft)](/assets/scores/incident.pdf) - Main Point, 1975.
-* Piano Man (bridge, draft) - Long Island, 1982.
+* Piano Man (bridge, draft) - Long Island, 1982. -->
 
 
 ## Teaching
 
 I run supervisions in Bayesian inference / Machine learning / Information theory for Part II of the CS tripos at Cambridge. Supervisions are an archaic but effective 
-teaching system at Oxbridge, where students interact in small groups (2-3) with an appointed tutor. I find them more fun than usual TA duties, but cannot speak for my supervisees.
+teaching system at Oxbridge, where students interact in small groups (2-3) with an appointed tutor. I find them more fun than usual teaching duties, but cannot speak for my supervisees.
 
 In the distant past I was a teaching assistant for several graduate/undergraduate courses in the CS/mathematics department at the University of Melbourne.
 

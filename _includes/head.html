@@ -54,8 +54,7 @@
       ],
         TeX: {
           equationNumbers: { autoNumber: "AMS" },
-          tagSide: "right"
-
+          tagSide: "right",
         },
 
         tex2jax: {
@@ -64,10 +63,14 @@
           processEscapes: true
 
         }
-  
       });
 
     </script>
+
+    <!-- <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+ -->
 
     <!-- NORMAL FONT-->
     <!-- <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>  -->
@@ -97,6 +100,17 @@
       \newcommand{\E}[2]{\mathbb{E}_{#1}\left[#2\right]}
       \newcommand{\a}[2]{\left\langle {#1} \right\rangle_{#2}}
       \DeclareMathOperator*{\argmax}{argmax}
+      \require{empheq}
+      \definecolor{blendedblue}{rgb}{0.137,0.466,0.741}
+      \definecolor{indigo}{HTML}{3f51b5}
+      \definecolor{pink}{HTML}{e91e63}
+      \definecolor{blue2}{RGB}{30,144,255}
+      \definecolor{navy}{HTML}{0055cf}
+      \definecolor{pondblue}{HTML}{aac8d8}
+      \definecolor{mydarkblue}{HTML}{151a24}
+      \definecolor{textcolor}{HTML}{c7c7c7}
+      \definecolor{minerva_blue}{HTML}{0c4684}
+      \definecolor{offwhite}{HTML}{fffce6}
       $
       </div>
     {% endif %}

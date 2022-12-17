@@ -120,11 +120,13 @@ $$\begin{align*}
     &= \frac{1}{4 \pi} \int_M d^n X \sqrt{G} \left( \alpha' R + \frac{\alpha'^2}{4\pi} \vert \textsf{Riem} \vert^2 + O(\alpha'^3) \right). 
 \end{align*}$$
 
-To one loop, the volume evolves under renormalization as the integral of the Ricci curvature over $M$, which is also coincidentally the Einstein-Hilbert action:
+To one loop, the volume evolves under renormalization as the integral of the Ricci curvature over $M$, which is also the Einstein-Hilbert action:
 
 $$\begin{equation}
     \frac{\partial V}{\partial \log \mu} = \frac{\alpha'}{4 \pi} \int_M d^n X \sqrt{G}  \, R + O(\alpha'^2).
 \end{equation}$$
+
+This makes sense - the Ricci-flat metric is a critical point of the Einstein-Hilbert action
 
 * If $M$ is two dimensional, one may recognize the leading order term as the content of the classical Gauss-Bonnet theorem. This essentially relates geometry to topology, and says that the number of holes (genus $g$) of the surface is given by the integral of the curvature over the surface. 
 

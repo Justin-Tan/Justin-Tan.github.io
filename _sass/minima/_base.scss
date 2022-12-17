@@ -421,3 +421,65 @@ table {
   margin: 33px auto;
   width: 70px;
 }
+
+.theorem {
+  display: block;
+  font-style: italic;
+  font-size: 24px;
+  // font-family: "Times New Roman";
+  color: $text-color;
+  border-radius: 10px;
+  background-color: $background-color; 
+  // box-shadow: 5px 10px 8px #888888;
+}
+.theorem::before {
+  content: "Theorem. ";
+  font-weight: bold;
+  font-style: normal;
+  display: inline-block;
+  min-width: fill-available;
+  width: -moz-available;          /* WebKit-based browsers will ignore this. */
+  width: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
+  width: fill-available;
+  color: white;
+  border-radius: 10px 10px 0 0;
+  padding: 10px 5px 5px 15px;
+  background-color: rgb(38, 38, 134);
+}
+.theorem[text]::before {
+  content: "Theorem (" attr(text) ") ";
+}
+.theorem p {
+  padding: 15px 15px 15px 15px;
+}
+
+.defn {
+  display: block;
+  font-style: italic;
+  font-size: 24px;
+  // font-family: "Times New Roman";
+  color: $text-color;
+  border-radius: 10px;
+  background-color: $background-color; 
+  // box-shadow: 5px 10px 8px #888888;
+}
+.defn::before {
+  content: "Definition. ";
+  font-weight: bold;
+  font-style: normal;
+  display: inline-block;
+  min-width: fill-available;
+  width: -moz-available;          /* WebKit-based browsers will ignore this. */
+  width: -webkit-fill-available;  /* Mozilla-based browsers will ignore this. */
+  width: fill-available;
+  color: white;
+  border-radius: 10px 10px 0 0;
+  padding: 10px 5px 5px 15px;
+  background-color: rgb(38, 38, 134);
+}
+.defn[text]::before {
+  content: "Definition (" attr(text) ") ";
+}
+.defn p {
+  padding: 15px 15px 15px 15px;
+}
