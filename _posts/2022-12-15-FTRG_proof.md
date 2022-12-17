@@ -84,7 +84,7 @@ $$\begin{align*}
   TX \otimes \bigwedge\nolimits^2 T^{*}X &= \left\{ T^i_{jk} = -T^i_{kj} \right\}.
 \end{align*}$$
 
-So both have rank $n \cdot { n \choose 2}$. Now it's left to show that $\Delta \mapsto \Delta \wedge \theta$ is injective. i.e. that if $\Delta^i_{jk}$ satisfies $\Delta_{ijk} = -\Delta{jik}$ after lowering the $TX$ index with the metric, and lies in $\textsf{Ker}(F)$ fibrewise, then $\Delta = 0$. $\Delta$ being in $\textsf{Ker}(F)$ means it is symmetric in it's last two indices. Now the problem reduces to index-pushing: 
+So both have rank $n \cdot { n \choose 2}$. Now it's left to show that $\Delta \mapsto \Delta \wedge \theta$ is injective. i.e. that if $\Delta^i_{jk}$ satisfies $\Delta_{ijk} = -\Delta_{jik}$ after lowering the $TX$ index with the metric, and lies in $\textsf{Ker}(F)$ fibrewise, then $\Delta = 0$. $\Delta$ being in $\textsf{Ker}(F)$ means it is symmetric in it's last two indices. Now the problem reduces to index-pushing: 
 
 $$ \Delta_{ijk} = -\Delta_{jik} = -\Delta_{jki} = \Delta_{kji} = \Delta_{kij} = -\Delta_{ikj} = -\Delta_{ijk} = 0.$$
 
