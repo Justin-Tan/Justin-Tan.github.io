@@ -16,21 +16,20 @@ Bruce Springsteen, hanging out with my neighbour's cat, football.
 
 ## Miscellanea
 
-<!-- ### Transcriptions -->
+### Transcriptions
 
-<!-- Partial piano transcriptions of notable songs recorded live.
+Partial piano transcriptions of notable songs recorded live.
 
 * Thunder Road (opening, draft) - West Hollywood, 1975. The first track on Springsteen's famed Live 1975-85 album.
-* [Incident on 57th Street (opening, draft)](/assets/scores/incident.pdf) - Main Point, 1975.
-* Piano Man (bridge, draft) - Long Island, 1982. -->
+* [Incident on 57th Street (opening, draft)](/assets/scores/string_data.pdf) - Main Point, 1975.
+* Piano Man (bridge, draft) - Long Island, 1982.
 
 
 ## Teaching
 
-I run supervisions in Bayesian inference / Machine learning / Information theory for Part II of the CS tripos at Cambridge. Supervisions are an archaic but effective 
-teaching system at Oxbridge, where students interact in small groups (2-3) with an appointed tutor. I find them more fun than usual teaching duties, but cannot speak for my supervisees.
+I run supervisions in Bayesian inference / Machine learning / Information theory for Part II of the CS/maths tripos at Cambridge. Supervisions are an archaic but effective teaching system at Oxbridge, where students interact in small groups (2-3) with an appointed tutor. I find them more fun than usual teaching duties, but cannot speak for my supervisees.
 
-In the distant past I was a teaching assistant for several graduate/undergraduate courses in the CS/mathematics department at the University of Melbourne.
+In the distant past I was a teaching assistant for several graduate/undergraduate courses in the CS/maths department at the University of Melbourne.
 
 <!-- |Head TA / TA,<br>[Statistical Machine Learning](https://handbook.unimelb.edu.au/subjects/comp90051) (COMP90051) | Spring 19, 20, 21 / Fall 20, 21 |
 |Head TA,<br>[Computer Vision](https://handbook.unimelb.edu.au/subjects/comp90086) (COMP90086) | Spring 21 |
